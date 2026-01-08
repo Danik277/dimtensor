@@ -81,11 +81,11 @@ IMPORTANT: DO NOT STOP TO ASK FOR APPROVAL.
 
 ## CURRENT TASK
 
-**Task**: v1.2.0 - Domain Extensions (NEXT)
+**Task**: v1.3.0 - Visualization
 
-**Goal**: Add astronomy, chemistry, and engineering unit modules
+**Goal**: Add matplotlib and plotly integration with auto-labeled axes
 
-**Why**: Expand unit support for domain-specific scientific computing applications.
+**Why**: Scientists need plots with proper unit labels automatically. This is a key usability feature.
 
 ---
 
@@ -176,6 +176,41 @@ IMPORTANT: DO NOT STOP TO ASK FOR APPROVAL.
 | 39 | 🗺️ Engineering units module | DONE | Plan: .plans/2026-01-08_engineering-units.md |
 | 40 | Tests for domain units | DONE | 53 tests, all passing |
 | 41 | Deploy v1.2.0 | DONE | https://pypi.org/project/dimtensor/1.2.0/ |
+
+---
+
+### v1.3.0 - Visualization
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 42 | 🗺️ Research matplotlib integration patterns | PENDING | How to auto-label axes with units |
+| 43 | 🗺️ Create visualization/matplotlib.py | PENDING | PLAN REQUIRED |
+| 44 | Implement plot() wrapper with auto-labels | PENDING | |
+| 45 | Implement scatter(), bar(), hist() wrappers | PENDING | |
+| 46 | 🗺️ Research plotly integration | PENDING | |
+| 47 | 🗺️ Create visualization/plotly.py | PENDING | PLAN REQUIRED |
+| 48 | Add unit conversion in plot calls | PENDING | e.g., plot(distance, unit=km) |
+| 49 | Add tests for visualization | PENDING | |
+| 50 | Update visualization/__init__.py exports | PENDING | |
+| 51 | Update README with visualization examples | PENDING | |
+| 52 | Deploy v1.3.0 to PyPI | PENDING | |
+
+---
+
+### v1.4.0 - Validation & Constraints
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 53 | 🗺️ Design constraint system | PENDING | PLAN REQUIRED: positive, bounded, etc. |
+| 54 | 🗺️ Create validation/constraints.py | PENDING | PLAN REQUIRED |
+| 55 | Implement PositiveConstraint | PENDING | Raise on negative values |
+| 56 | Implement BoundedConstraint(min, max) | PENDING | |
+| 57 | Implement NonZeroConstraint | PENDING | |
+| 58 | Add constraint checking to DimArray operations | PENDING | |
+| 59 | 🗺️ Design conservation law tracking | PENDING | PLAN REQUIRED |
+| 60 | Implement ConservationTracker | PENDING | Track energy, momentum, etc. |
+| 61 | Add tests for validation | PENDING | |
+| 62 | Deploy v1.4.0 to PyPI | PENDING | |
 
 ---
 
