@@ -63,6 +63,20 @@ cp .plans/_TEMPLATE.md .plans/$(date +%Y-%m-%d)_feature-name.md
 
 ---
 
+## Skills (Auto-Loaded Guidance)
+
+Skills provide specialized knowledge that's auto-loaded based on your task. Located in `.claude/skills/`.
+
+| Skill | When It Activates |
+|-------|-------------------|
+| `units-design` | Designing new unit modules (astronomy, chemistry, etc.) |
+| `deploy` | Deploying to PyPI |
+| `code-review` | Reviewing code for correctness |
+
+Skills are automatically detected - just work on the task and the relevant skill will load.
+
+---
+
 ## Build & Test
 
 ```bash

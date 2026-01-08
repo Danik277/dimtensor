@@ -5,6 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-01-08
+
+### Added
+- **Domain-specific units** via new `domains` module
+  - **Astronomy** (`from dimtensor.domains.astronomy import ...`)
+    - Distance: `parsec`, `AU`, `light_year`, `kiloparsec`, `megaparsec`
+    - Mass: `solar_mass`, `earth_mass`, `jupiter_mass`
+    - Radius: `solar_radius`, `earth_radius`, `jupiter_radius`
+    - Luminosity: `solar_luminosity`
+    - Angular: `arcsecond`, `milliarcsecond`, `microarcsecond`
+    - Time: `julian_year`
+  - **Chemistry** (`from dimtensor.domains.chemistry import ...`)
+    - Atomic mass: `dalton`, `atomic_mass_unit`
+    - Concentration: `molar`, `millimolar`, `micromolar`, `nanomolar`, `picomolar`
+    - Molality: `molal`
+    - Ratios: `ppm`, `ppb`, `ppt`, `percent`
+    - Length: `angstrom`, `bohr_radius`
+    - Energy: `hartree`, `kcal_per_mol`, `kJ_per_mol`
+    - Dipole: `debye`
+  - **Engineering** (`from dimtensor.domains.engineering import ...`)
+    - Pressure: `MPa`, `kPa`, `GPa`, `ksi`, `millibar`
+    - Energy: `BTU`, `therm`, `kWh`, `MWh`
+    - Power: `horsepower`, `metric_horsepower`, `ton_refrigeration`
+    - Flow: `gpm`, `cfm`, `lpm`
+    - Torque: `ft_lb`, `in_lb`, `Nm`
+    - Angular velocity: `rpm`, `rps`
+    - Length: `mil`, `micrometer`
+
+- 53 new tests for domain-specific units
+- Domain imports available from main package: `from dimtensor import domains`
+
+### Changed
+- Total test count: 394 → 456 (excluding skipped)
+- mypy source files: 27 → 31
+
 ## [1.1.0] - 2026-01-08
 
 ### Added

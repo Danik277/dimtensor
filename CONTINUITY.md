@@ -54,28 +54,28 @@ IMPORTANT: DO NOT STOP TO ASK FOR APPROVAL.
 
 - Agent read full file: YES
 - Current task understood: YES
-- Current task: v1.1.0 COMPLETE - v1.2.0 pending
+- Current task: v1.2.0 Domain Extensions - creating plans for astronomy, chemistry, engineering units
+- Session started: 2026-01-08 ~late evening
 
 ---
 
 ## CURRENT STATE
 
 **Date**: 2026-01-08
-**Version**: 1.1.0 (deployed to PyPI)
-**Status**: v1.1.0 RELEASED
+**Version**: 1.2.0 (deployed to PyPI)
+**Status**: v1.2.0 RELEASED
 
 ### What Just Happened
-- v1.0.1 consolidation completed (code review, JAX fix, coverage, docs)
-- v1.1.0 built and deployed:
-  - NetCDF support (netCDF4): save/load + multiple arrays
-  - Parquet support (pyarrow): save/load + multiple arrays
-  - xarray integration: to/from DataArray, to/from Dataset
-- mypy passes (0 errors, 27 source files)
-- 341 tests pass, 62 skipped
-- Optional deps: `pip install dimtensor[netcdf,parquet,xarray,all]`
+- v1.2.0 domain extensions implemented:
+  - Astronomy units: parsec, AU, light_year, solar_mass, etc.
+  - Chemistry units: molar, dalton, ppm, angstrom, etc.
+  - Engineering units: MPa, ksi, BTU, hp, etc.
+- 53 new domain unit tests (456 total tests)
+- mypy passes (0 errors, 31 source files)
+- Plans created in .plans/ folder per workflow
 
 ### What Needs to Happen
-- v1.2.0: Domain extensions (astronomy, chemistry, engineering units)
+- Plan v1.3.0 (check ROADMAP.md)
 
 ---
 
@@ -167,15 +167,15 @@ IMPORTANT: DO NOT STOP TO ASK FOR APPROVAL.
 
 ---
 
-### v1.2.0 - Domain Extensions (NEXT)
+### v1.2.0 - Domain Extensions
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 37 | 🗺️ Astronomy units module | PENDING | PLAN REQUIRED: parsec, AU, solar_mass, light_year |
-| 38 | 🗺️ Chemistry units module | PENDING | PLAN REQUIRED: molar, molal, ppm |
-| 39 | 🗺️ Engineering units module | PENDING | PLAN REQUIRED: MPa, ksi, BTU, hp |
-| 40 | Tests for domain units | PENDING | |
-| 41 | Deploy v1.2.0 | PENDING | |
+| 37 | 🗺️ Astronomy units module | DONE | Plan: .plans/2026-01-08_astronomy-units.md |
+| 38 | 🗺️ Chemistry units module | DONE | Plan: .plans/2026-01-08_chemistry-units.md |
+| 39 | 🗺️ Engineering units module | DONE | Plan: .plans/2026-01-08_engineering-units.md |
+| 40 | Tests for domain units | DONE | 53 tests, all passing |
+| 41 | Deploy v1.2.0 | DONE | https://pypi.org/project/dimtensor/1.2.0/ |
 
 ---
 
@@ -302,6 +302,23 @@ Format: Use sequential numbers. Add new entries at the bottom.
 26. Context compacted - restored from summary
 27. Deployed v1.1.0 to PyPI: https://pypi.org/project/dimtensor/1.1.0/
 28. v1.1.0 COMPLETE - NetCDF, Parquet, xarray support all released
+
+### Session: 2026-01-08 late evening (v1.2.0)
+
+29. Started v1.2.0 domain extensions
+30. Created plans for all 3 domain modules (per workflow rules with 🗺️ markers)
+31. Created domains/ folder with __init__.py
+32. Created domains/astronomy.py - parsec, AU, light_year, solar_mass, etc.
+33. Created domains/chemistry.py - molar, dalton, ppm, angstrom, etc.
+34. Created domains/engineering.py - MPa, ksi, BTU, hp, etc.
+35. Updated __init__.py to expose domains module
+36. Created tests/test_domains.py with 53 tests
+37. All tests pass (456 total, 62 skipped)
+38. mypy clean (31 source files)
+39. Updated version to 1.2.0 in pyproject.toml and __init__.py
+40. Updated CHANGELOG.md and README.md
+41. Deployed v1.2.0 to PyPI: https://pypi.org/project/dimtensor/1.2.0/
+42. v1.2.0 COMPLETE - Domain extensions released
 
 ---
 

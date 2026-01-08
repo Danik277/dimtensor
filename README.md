@@ -45,7 +45,8 @@ velocity + acceleration  # DimensionError: cannot add m/s to m/s^2
 - **JAX Integration**: `DimArray` registered as JAX pytree for jit/vmap/grad
 - **Physical Constants**: CODATA constants with proper units and uncertainties
 - **Uncertainty Propagation**: Track and propagate measurement uncertainties
-- **I/O Support**: Save/load to JSON, HDF5, and pandas DataFrames
+- **I/O Support**: Save/load to JSON, HDF5, Parquet, NetCDF, pandas, xarray
+- **Domain Units**: Astronomy, chemistry, and engineering units
 
 ## PyTorch Integration
 
@@ -178,6 +179,54 @@ from dimtensor.io import to_xarray, from_xarray
 arr = DimArray([1.0, 2.0, 3.0], units.m)
 da = to_xarray(arr, name="distance", dims=("x",))
 restored = from_xarray(da)  # Back to DimArray with units
+```
+
+## Domain-Specific Units
+
+### Astronomy
+
+```python
+from dimtensor import DimArray
+from dimtensor.domains.astronomy import parsec, AU, solar_mass, light_year
+
+# Distance to Proxima Centauri
+distance = DimArray([4.24], light_year)
+distance_pc = distance.to(parsec)  # ~1.3 pc
+
+# Stellar mass
+mass = DimArray([1.0], solar_mass)  # 1 solar mass
+```
+
+### Chemistry
+
+```python
+from dimtensor import DimArray
+from dimtensor.domains.chemistry import molar, dalton, ppm
+
+# Solution concentration
+concentration = DimArray([0.1], molar)  # 0.1 M
+
+# Atomic mass
+carbon_mass = DimArray([12.011], dalton)  # Carbon atomic weight
+
+# Trace amounts
+contamination = DimArray([50], ppm)  # 50 parts per million
+```
+
+### Engineering
+
+```python
+from dimtensor import DimArray
+from dimtensor.domains.engineering import MPa, hp, BTU, kWh
+
+# Material stress
+yield_strength = DimArray([250], MPa)
+
+# Engine power
+power = DimArray([100], hp)  # 100 horsepower
+
+# Energy consumption
+electricity = DimArray([500], kWh)  # 500 kilowatt-hours
 ```
 
 ## Examples

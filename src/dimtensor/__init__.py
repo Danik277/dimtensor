@@ -26,13 +26,16 @@ from .core import units
 # Physical constants
 from . import constants
 
+# Domain-specific units
+from . import domains
+
 # Configuration
 from . import config
 
 # Module-level array functions
 from .functions import concatenate, stack, split, dot, matmul, norm
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 
 __all__ = [
     # Core classes
@@ -54,6 +57,7 @@ __all__ = [
     # Modules
     "units",
     "constants",
+    "domains",
     "config",
     # Version
     "__version__",
