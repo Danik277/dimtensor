@@ -1,61 +1,167 @@
-# Continuity Log
+# CONTINUITY LOG
 
-This file tracks the state of autonomous work sessions. Updated continuously to survive context collapses.
+## STOP. READ THIS ENTIRE SECTION FIRST.
 
-**READ THIS FILE FIRST ON CONTEXT RESTORE**
+**Your context WILL be compacted.** When that happens, you lose ALL memory of what you were doing.
+
+This file is your ONLY lifeline. If you don't update it, future-you will waste time figuring out where you are.
+
+### MANDATORY RULES (ACTIVE ENFORCEMENT)
+
+| Rule | When | Consequence of Skipping |
+|------|------|------------------------|
+| Update CURRENT TASK section | Before starting ANY task | Future-you won't know what to do |
+| Update SESSION LOG | Every 10-15 minutes | Context loss on compaction |
+| Update this file | Before ANY git commit | Lost progress tracking |
+| Run tests | Before ANY commit | Broken deployments |
+
+**The 30 seconds you spend updating this file saves 5+ minutes of confusion after compaction.**
 
 ---
 
-## CURRENT SESSION
+## CURRENT STATE
 
 **Date**: 2026-01-08
-**Started**: 22:50 CET
-**Current Time**: 22:55 CET
-**Hours Worked**: 0.1
+**Time**: 23:30 CET
+**Version**: 0.9.0 (deployed to PyPI)
+**Target Version**: 1.0.0
 
-### Active Task
-Setup complete - ready for worker agent to begin
-
-### Task Queue (Priority Order)
-1. [DONE] Set up autonomous work system
-2. [DONE] Complete v0.5.0: Uncertainty propagation → deployed to PyPI
-3. [IN PROGRESS] Implement v0.6.0: PyTorch DimTensor → deploy to PyPI
-4. [PENDING] Implement v0.7.0: JAX integration → deploy to PyPI
-5. [PENDING] Implement v0.8.0: Performance optimization → deploy to PyPI
-6. [PENDING] Implement v0.9.0: Serialization → deploy to PyPI
-7. [PENDING] Implement v1.0.0: Production readiness → deploy to PyPI
-
-### Target
-By morning: PyPI should show v1.0.0
+### Test Status
+- 316 tests passing, 48 skipped (JAX platform)
+- 72% coverage
+- Last verified: 23:10 CET
 
 ---
 
-## WORKFLOW
+## CURRENT TASK
 
-### Before Each Task
-1. Read CONTINUITY.md to get current state
-2. Update this file: Set task as "IN PROGRESS", note start time
-3. Update TodoWrite tool: Mark task in_progress
-4. Read relevant source files
+**Status**: READY TO START
 
-### During Task
-1. Write code
-2. Run tests: `pytest`
-3. Fix any failures
-4. Update tests if needed
+**Goal**: Complete v1.0.0 Production Release
 
-### After Each Task
-1. Run full test suite: `pytest` - MUST PASS
-2. Update CONTINUITY.md: Mark complete, note time
-3. Update TodoWrite: Mark completed
-4. Update CHANGELOG.md with changes
-5. Update ROADMAP.md checkboxes if milestone reached
+### Task Queue (Do in Order)
 
-### After Each Version Milestone (v0.5, v0.6, etc.)
-1. Update version in `pyproject.toml` AND `src/dimtensor/__init__.py`
-2. Git commit and push
-3. Build and deploy to PyPI
-4. Log deployment in session log
+#### Phase 1: Code Review & Fix (Do First)
+1. [ ] Review `src/dimtensor/torch/dimtensor.py`
+   - Check for bugs, type issues, missing edge cases
+   - Note any issues in CODE REVIEW FINDINGS below
+2. [ ] Review `src/dimtensor/jax/dimarray.py`
+3. [ ] Review `src/dimtensor/io/json.py`
+4. [ ] Review `src/dimtensor/io/pandas.py`
+5. [ ] Review `src/dimtensor/io/hdf5.py`
+6. [ ] Review `src/dimtensor/benchmarks.py`
+7. [ ] Fix all issues found during review
+
+#### Phase 2: Type Safety
+8. [ ] Run mypy: `mypy src/dimtensor --ignore-missing-imports`
+9. [ ] Fix all type errors
+10. [ ] Verify clean mypy output
+
+#### Phase 3: Test Coverage
+11. [ ] Run coverage: `pytest --cov=dimtensor --cov-report=term-missing`
+12. [ ] Identify uncovered code paths
+13. [ ] Add tests to reach 85%+ coverage
+
+#### Phase 4: Documentation
+14. [ ] Update README.md with current features
+15. [ ] Ensure all public functions have docstrings
+16. [ ] Add usage examples for new modules
+
+#### Phase 5: Release
+17. [ ] Update version to 1.0.0 in pyproject.toml AND __init__.py
+18. [ ] Update CHANGELOG.md
+19. [ ] Run final test suite
+20. [ ] Git commit, push, build, deploy to PyPI
+
+---
+
+## CODE REVIEW FINDINGS
+
+### torch/dimtensor.py
+- [ ] Reviewed: NO
+- Issues found:
+  - (none yet - fill in during review)
+
+### jax/dimarray.py
+- [ ] Reviewed: NO
+- Issues found:
+  - (none yet)
+
+### io/json.py
+- [ ] Reviewed: NO
+- Issues found:
+  - (none yet)
+
+### io/pandas.py
+- [ ] Reviewed: NO
+- Issues found:
+  - (none yet)
+
+### io/hdf5.py
+- [ ] Reviewed: NO
+- Issues found:
+  - (none yet)
+
+### benchmarks.py
+- [ ] Reviewed: NO
+- Issues found:
+  - (none yet)
+
+---
+
+## CODE REVIEW CHECKLIST
+
+When reviewing each file, check for:
+
+1. **Correctness**
+   - [ ] Logic errors
+   - [ ] Edge cases handled (empty arrays, scalars, None)
+   - [ ] Error messages are helpful
+
+2. **Type Safety**
+   - [ ] Type hints on all public functions
+   - [ ] No `Any` types where specific types are possible
+   - [ ] Return types documented
+
+3. **Consistency**
+   - [ ] Follows patterns from core/dimarray.py
+   - [ ] Uses `_from_data_and_unit` pattern for internal construction
+   - [ ] Unit handling matches existing code
+
+4. **Testing**
+   - [ ] All public methods have tests
+   - [ ] Edge cases tested
+   - [ ] Error cases tested
+
+5. **Documentation**
+   - [ ] Docstrings on public functions
+   - [ ] Examples in docstrings where helpful
+
+---
+
+## SESSION LOG
+
+### 22:50 - Session Started (Meta agent)
+- Set up initial CONTINUITY.md system
+
+### 22:55 - Worker agent started
+- Built v0.5.0 through v0.9.0
+- Deployed all to PyPI
+- Did NOT maintain CONTINUITY.md (mistake)
+
+### ~23:10 - Worker context compacted
+- Lost working memory
+- Started v1.0.0 mypy fixes
+- Got compacted again mid-work
+
+### 23:15 - Meta agent intervention
+- Verified actual state (v0.9.0 on PyPI, 316 tests pass)
+- Rebuilt CONTINUITY.md with stronger enforcement
+
+### 23:30 - System ready for new worker
+- Updated ROADMAP.md to reflect reality
+- Created v1.0.0 task queue with code review
+- Ready for next agent
 
 ---
 
@@ -65,112 +171,76 @@ By morning: PyPI should show v1.0.0
 # Working directory
 cd "/Users/marcsperzel/Local Documents/Projects/Packages/dimtensor"
 
-# Run tests (MUST PASS before any commit)
+# ALWAYS run before any commit
 pytest
 
-# Git commit and push
+# Type checking
+mypy src/dimtensor --ignore-missing-imports
+
+# Coverage
+pytest --cov=dimtensor --cov-report=term-missing
+
+# Version update locations (BOTH must be changed)
+# 1. pyproject.toml line ~7: version = "X.Y.0"
+# 2. src/dimtensor/__init__.py line ~35: __version__ = "X.Y.0"
+
+# Deploy sequence
 git add -A
-git commit -m "Release vX.Y.0: Brief description"
+git commit -m "Release vX.Y.0: Description"
 git push origin main
-
-# Build package
+rm -rf dist/ build/
 python -m build
-
-# Deploy to PyPI
 twine upload dist/*
-
-# Clean dist after deploy
-rm -rf dist/ build/ *.egg-info
 ```
 
-### Version Update Locations
-1. `pyproject.toml` line 7: `version = "X.Y.0"`
-2. `src/dimtensor/__init__.py` line 35: `__version__ = "X.Y.0"`
+---
+
+## KEY FILES
+
+| File | Purpose | Lines |
+|------|---------|-------|
+| `src/dimtensor/core/dimarray.py` | Core NumPy DimArray | 974 |
+| `src/dimtensor/torch/dimtensor.py` | PyTorch DimTensor | 591 |
+| `src/dimtensor/jax/dimarray.py` | JAX DimArray | 506 |
+| `src/dimtensor/io/json.py` | JSON serialization | 144 |
+| `src/dimtensor/io/pandas.py` | Pandas integration | 209 |
+| `src/dimtensor/io/hdf5.py` | HDF5 serialization | 251 |
+| `src/dimtensor/benchmarks.py` | Performance benchmarks | 304 |
+| `CHANGELOG.md` | Release notes | - |
+| `ROADMAP.md` | Future plans | - |
 
 ---
 
-## PROJECT STATE
+## KNOWN ISSUES
 
-### Current Version: 0.4.0 (on PyPI)
-### Next Version: 0.5.0 (in development)
-
-### Git Remote
-- origin: https://github.com/marcoloco23/dimtensor.git
-
-### Test Status
-- 225 tests passing
-- 84% coverage
-- Last run: 22:45 CET 2026-01-08
+1. **JAX tests skip** on this machine (CPU architecture incompatibility)
+2. **Previous agent started mypy fixes** - made some `builtins.float` changes to torch/dimtensor.py but didn't finish
+3. **Coverage at 72%** - need to reach 85%+ for v1.0
 
 ---
 
-## VERSION PLAN
+## WHAT SUCCESS LOOKS LIKE
 
-| Version | Focus | Key Features | Status |
-|---------|-------|--------------|--------|
-| 0.5.0 | Uncertainty | Correlation tracking | IN PROGRESS |
-| 0.6.0 | PyTorch | DimTensor, autograd, GPU | PENDING |
-| 0.7.0 | JAX | pytree, JIT, vmap, grad | PENDING |
-| 0.8.0 | Performance | Rust backend, lazy eval | PENDING |
-| 0.9.0 | Serialization | HDF5, NetCDF, Parquet, Pandas | PENDING |
-| 1.0.0 | Production | API freeze, 100% coverage, docs | PENDING |
-
----
-
-## v0.5.0 DETAILS - Correlation Tracking
-
-### What's Done
-- Uncertainty storage in DimArray constructor
-- Propagation through +, -, *, /, ** operations
-- Properties: .uncertainty, .relative_uncertainty, .has_uncertainty
-- String formatting with ± symbol
-- Unit conversion scales uncertainty
-- Reduction operations (sum, mean, min, max)
-
-### What's Needed
-Correlation tracking for correlated measurements:
-- When x and y are correlated with coefficient ρ:
-  - Addition: σ_z² = σ_x² + σ_y² + 2ρσ_xσ_y
-  - Multiplication: (σ_z/z)² = (σ_x/x)² + (σ_y/y)² + 2ρ(σ_x/x)(σ_y/y)
-
-### Design Decision Needed
-Choose approach:
-1. **Explicit correlation parameter**: `a.add(b, correlation=0.5)`
-2. **Correlated group**: `with correlated(a, b, rho=0.5): result = a + b`
-3. **Correlation registry**: Track correlations globally
-
-Recommend: Option 1 (simplest, explicit, no hidden state)
+**v1.0.0 is ready when:**
+- [ ] All code review findings resolved
+- [ ] `mypy src/dimtensor --ignore-missing-imports` returns 0 errors
+- [ ] `pytest` shows 85%+ coverage
+- [ ] README reflects current features
+- [ ] CHANGELOG has v1.0.0 entry
+- [ ] Version is 1.0.0 in both files
+- [ ] Deployed to PyPI
 
 ---
 
-## SESSION LOG
+## AFTER v1.0.0
 
-### 22:50 - Session Start
-- Analyzed codebase state
-- Found 225 tests passing, 84% coverage
-- Identified v0.5.0 needs correlation tracking
+Next milestone is v1.1.0 (see ROADMAP.md):
+- NetCDF support
+- Parquet support
+- xarray integration
 
-### 22:55 - Setup Complete
-- Created CONTINUITY.md tracking system
-- Documented workflow and deployment commands
-- Ready for worker agent
-
----
-
-## KEY DECISIONS
-
-(Worker agent: Record design decisions here)
-
----
-
-## BLOCKERS
-
-(Worker agent: Record blockers here, user will check)
-
----
-
-## FILES MODIFIED THIS SESSION
-
-(Track all files changed)
+Then v2.0.0:
+- Rust backend for performance
+- <10% overhead target
 
 ---
