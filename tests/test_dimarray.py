@@ -250,6 +250,143 @@ class TestDimArrayString:
         assert "1" in s
 
 
+class TestUnitSimplification:
+    """Test unit simplification in display."""
+
+    def test_force_simplifies_to_newton(self):
+        """kg·m/s² simplifies to N."""
+        m = DimArray([2], units.kg)
+        a = DimArray([9.8], units.m / units.s**2)
+        F = m * a
+        assert "N" in str(F)
+
+    def test_energy_simplifies_to_joule(self):
+        """kg·m²/s² simplifies to J."""
+        F = DimArray([10], units.N)
+        d = DimArray([5], units.m)
+        E = F * d
+        assert "J" in str(E)
+
+    def test_power_simplifies_to_watt(self):
+        """kg·m²/s³ simplifies to W."""
+        E = DimArray([100], units.J)
+        t = DimArray([10], units.s)
+        P = E / t
+        assert "W" in str(P)
+
+    def test_velocity_stays_as_m_per_s(self):
+        """m/s stays as m/s (registered form)."""
+        v = DimArray([10], units.m / units.s)
+        assert "m/s" in str(v)
+
+    def test_distance_simplifies_from_v_times_t(self):
+        """m/s * s simplifies to m."""
+        v = DimArray([10], units.m / units.s)
+        t = DimArray([5], units.s)
+        d = v * t
+        s = str(d)
+        # Should be "m" not "m/s·s"
+        assert s.endswith(" m") or s.endswith(" m²") is False
+
+
+class TestFormatStrings:
+    """Test __format__ support."""
+
+    def test_format_single_value(self):
+        """Format single value with format spec."""
+        d = DimArray([1234.5678], units.m)
+        assert f"{d:.2f}" == "1234.57 m"
+
+    def test_format_scientific(self):
+        """Scientific notation format."""
+        d = DimArray([1234.5678], units.m)
+        result = f"{d:.2e}"
+        assert "1.23e+03" in result
+        assert "m" in result
+
+    def test_format_no_spec(self):
+        """Format without spec includes value and unit."""
+        d = DimArray([10], units.m)
+        result = f"{d}"
+        assert "10" in result
+        assert "m" in result
+
+    def test_format_dimensionless(self):
+        """Format dimensionless quantity."""
+        ratio = DimArray([3.14159])
+        assert f"{ratio:.2f}" == "3.14"
+
+
+class TestNumpyUfuncs:
+    """Test numpy ufunc integration."""
+
+    def test_sin_dimensionless(self):
+        """np.sin works on dimensionless."""
+        angle = DimArray([0, np.pi/2], units.rad)
+        result = np.sin(angle)
+        np.testing.assert_array_almost_equal(result.data, [0, 1])
+        assert result.is_dimensionless
+
+    def test_cos_dimensionless(self):
+        """np.cos works on dimensionless."""
+        angle = DimArray([0, np.pi])
+        result = np.cos(angle)
+        np.testing.assert_array_almost_equal(result.data, [1, -1])
+
+    def test_exp_dimensionless(self):
+        """np.exp works on dimensionless."""
+        x = DimArray([0, 1])
+        result = np.exp(x)
+        np.testing.assert_array_almost_equal(result.data, [1, np.e])
+
+    def test_log_dimensionless(self):
+        """np.log works on dimensionless."""
+        x = DimArray([1, np.e])
+        result = np.log(x)
+        np.testing.assert_array_almost_equal(result.data, [0, 1])
+
+    def test_sin_rejects_dimensional(self):
+        """np.sin rejects non-dimensionless input."""
+        length = DimArray([1], units.m)
+        with pytest.raises(DimensionError):
+            np.sin(length)
+
+    def test_sqrt_halves_dimension(self):
+        """np.sqrt halves dimension exponents."""
+        area = DimArray([4, 9], units.m**2)
+        result = np.sqrt(area)
+        np.testing.assert_array_almost_equal(result.data, [2, 3])
+        assert result.dimension == units.m.dimension
+
+    def test_abs_preserves_unit(self):
+        """np.abs preserves units."""
+        v = DimArray([-1, 2, -3], units.m / units.s)
+        result = np.abs(v)
+        np.testing.assert_array_equal(result.data, [1, 2, 3])
+        assert result.dimension == v.dimension
+
+    def test_negative_preserves_unit(self):
+        """np.negative preserves units."""
+        v = DimArray([1, -2], units.m)
+        result = np.negative(v)
+        np.testing.assert_array_equal(result.data, [-1, 2])
+        assert result.dimension == v.dimension
+
+    def test_add_via_ufunc(self):
+        """np.add works with same dimensions."""
+        a = DimArray([1, 2], units.m)
+        b = DimArray([3, 4], units.m)
+        result = np.add(a, b)
+        np.testing.assert_array_equal(result.data, [4, 6])
+
+    def test_multiply_via_ufunc(self):
+        """np.multiply combines dimensions."""
+        m = DimArray([2], units.kg)
+        a = DimArray([5], units.m / units.s**2)
+        result = np.multiply(m, a)
+        assert result.dimension == units.N.dimension
+
+
 class TestPhysicsExamples:
     """Test real physics calculations."""
 

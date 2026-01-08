@@ -23,7 +23,7 @@ from .errors import DimensionError, UnitConversionError
 # Import all units into a 'units' namespace
 from .core import units
 
-__version__ = "0.1.2"
+__version__ = "0.2.0"
 
 __all__ = [
     # Core classes

@@ -128,6 +128,24 @@ class Unit:
         """Detailed representation."""
         return f"Unit({self.symbol!r}, {self.dimension!r}, {self.scale})"
 
+    def simplified(self) -> Unit:
+        """Return a unit with a simplified symbol.
+
+        Attempts to:
+        1. Match to a known SI derived unit (e.g., kg·m/s² → N)
+        2. Return self if no simplification found
+        """
+        # Only simplify SI-scale units (scale=1.0)
+        if abs(self.scale - 1.0) > 1e-10:
+            return self
+
+        # Look up in the registry
+        simplified_symbol = _DIMENSION_TO_SYMBOL.get(self.dimension)
+        if simplified_symbol:
+            return Unit(simplified_symbol, self.dimension, self.scale)
+
+        return self
+
 
 # =============================================================================
 # SI Base Units
@@ -270,3 +288,39 @@ atm = atmosphere
 # Speed
 speed_of_light = Unit("c", Dimension(length=1, time=-1), 299792458.0)
 c = speed_of_light
+
+# =============================================================================
+# Dimension to Symbol Registry (for unit simplification)
+# =============================================================================
+
+_DIMENSION_TO_SYMBOL: dict[Dimension, str] = {
+    # Dimensionless
+    DIMENSIONLESS: "1",
+    # Base dimensions
+    Dimension(length=1): "m",
+    Dimension(mass=1): "kg",
+    Dimension(time=1): "s",
+    Dimension(current=1): "A",
+    Dimension(temperature=1): "K",
+    Dimension(amount=1): "mol",
+    Dimension(luminosity=1): "cd",
+    # Derived SI units
+    Dimension(time=-1): "Hz",  # frequency
+    Dimension(mass=1, length=1, time=-2): "N",  # force
+    Dimension(mass=1, length=2, time=-2): "J",  # energy
+    Dimension(mass=1, length=2, time=-3): "W",  # power
+    Dimension(mass=1, length=-1, time=-2): "Pa",  # pressure
+    Dimension(current=1, time=1): "C",  # charge
+    Dimension(mass=1, length=2, time=-3, current=-1): "V",  # voltage
+    Dimension(mass=1, length=2, time=-3, current=-2): "Ω",  # resistance
+    Dimension(mass=-1, length=-2, time=4, current=2): "F",  # capacitance
+    Dimension(mass=1, length=2, time=-2, current=-1): "Wb",  # magnetic flux
+    Dimension(mass=1, time=-2, current=-1): "T",  # magnetic flux density
+    Dimension(mass=1, length=2, time=-2, current=-2): "H",  # inductance
+    # Common derived quantities
+    Dimension(length=1, time=-1): "m/s",  # velocity
+    Dimension(length=1, time=-2): "m/s²",  # acceleration
+    Dimension(length=2): "m²",  # area
+    Dimension(length=3): "m³",  # volume
+    Dimension(mass=1, length=-3): "kg/m³",  # density
+}

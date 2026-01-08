@@ -447,7 +447,30 @@ class DimArray:
 
         if self.is_dimensionless:
             return value_str
-        return f"{value_str} {self._unit.symbol}"
+        # Use simplified unit symbol for display
+        simplified = self._unit.simplified()
+        return f"{value_str} {simplified.symbol}"
+
+    def __format__(self, format_spec: str) -> str:
+        """Support format strings like f'{distance:.2f}'.
+
+        The format spec is applied to the numerical value(s).
+        """
+        if self._data.size == 1:
+            # Single value: format directly
+            value_str = format(self._data.item(), format_spec)
+        else:
+            # Multiple values: format each element
+            if format_spec:
+                formatted = [format(x, format_spec) for x in self._data.flat]
+                value_str = "[" + ", ".join(formatted) + "]"
+            else:
+                value_str = str(self._data)
+
+        if self.is_dimensionless:
+            return value_str
+        simplified = self._unit.simplified()
+        return f"{value_str} {simplified.symbol}"
 
     # =========================================================================
     # Numpy array protocol
@@ -463,3 +486,103 @@ class DimArray:
     def __array_priority__(self) -> float:
         """Ensure DimArray operations take precedence."""
         return 10.0
+
+    def __array_ufunc__(
+        self,
+        ufunc: np.ufunc,
+        method: str,
+        *inputs: Any,
+        **kwargs: Any,
+    ) -> Any:
+        """Handle numpy ufuncs like np.sin, np.sqrt, np.add, etc.
+
+        This enables expressions like:
+            np.sin(angle)  # requires dimensionless
+            np.sqrt(area)  # dimension exponents halve
+            np.add(a, b)   # requires same dimension
+        """
+        # Only handle __call__ method for now
+        if method != "__call__":
+            return NotImplemented
+
+        # Ufuncs that require dimensionless input and return dimensionless output
+        _DIMENSIONLESS_UFUNCS = {
+            np.sin, np.cos, np.tan,
+            np.arcsin, np.arccos, np.arctan,
+            np.sinh, np.cosh, np.tanh,
+            np.arcsinh, np.arccosh, np.arctanh,
+            np.exp, np.exp2, np.expm1,
+            np.log, np.log2, np.log10, np.log1p,
+        }
+
+        # Ufuncs that preserve the unit (unary)
+        _PRESERVE_UNIT_UFUNCS = {
+            np.negative, np.positive, np.absolute, np.fabs,
+            np.floor, np.ceil, np.trunc, np.rint,
+        }
+
+        # Handle dimensionless-requiring ufuncs
+        if ufunc in _DIMENSIONLESS_UFUNCS:
+            for inp in inputs:
+                if isinstance(inp, DimArray) and not inp.is_dimensionless:
+                    raise DimensionError(
+                        f"{ufunc.__name__}() requires dimensionless input, "
+                        f"got dimension {inp.dimension}"
+                    )
+            # Extract raw data
+            raw_inputs = [
+                inp._data if isinstance(inp, DimArray) else inp
+                for inp in inputs
+            ]
+            result = ufunc(*raw_inputs, **kwargs)
+            return DimArray._from_data_and_unit(result, dimensionless)
+
+        # Handle sqrt specially - halves dimension exponents
+        if ufunc is np.sqrt:
+            if len(inputs) != 1 or not isinstance(inputs[0], DimArray):
+                return NotImplemented
+            return inputs[0].sqrt()
+
+        # Handle square - doubles dimension exponents
+        if ufunc is np.square:
+            if len(inputs) != 1 or not isinstance(inputs[0], DimArray):
+                return NotImplemented
+            return inputs[0] ** 2
+
+        # Handle unit-preserving ufuncs
+        if ufunc in _PRESERVE_UNIT_UFUNCS:
+            if len(inputs) != 1 or not isinstance(inputs[0], DimArray):
+                return NotImplemented
+            raw_result = ufunc(inputs[0]._data, **kwargs)
+            return DimArray._from_data_and_unit(raw_result, inputs[0]._unit)
+
+        # Handle binary arithmetic ufuncs
+        if ufunc is np.add:
+            return inputs[0] + inputs[1]
+        if ufunc is np.subtract:
+            return inputs[0] - inputs[1]
+        if ufunc is np.multiply:
+            return inputs[0] * inputs[1]
+        if ufunc is np.divide or ufunc is np.true_divide:
+            return inputs[0] / inputs[1]
+        if ufunc is np.power:
+            # Power requires dimensionless exponent
+            base, exp = inputs
+            if isinstance(exp, DimArray):
+                if not exp.is_dimensionless:
+                    raise DimensionError(
+                        f"Exponent must be dimensionless, got {exp.dimension}"
+                    )
+                exp = exp._data
+            if isinstance(base, DimArray):
+                # For array exponents, all must be same value for dimension calc
+                if hasattr(exp, "__len__") and len(set(exp.flat)) > 1:
+                    raise DimensionError(
+                        "Cannot raise to array of different powers"
+                    )
+                power = float(exp.flat[0]) if hasattr(exp, "flat") else float(exp)
+                return base ** power
+            return NotImplemented
+
+        # For unhandled ufuncs, return NotImplemented
+        return NotImplemented
