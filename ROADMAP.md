@@ -38,7 +38,7 @@ What we have shipped:
 v0.1.x  ✅ Foundation      - Basic DimArray, units, PyPI
 v0.2.x  ✅ Usability       - Unit simplification, format strings, numpy ufuncs
 v0.3.x  ✅ NumPy Parity    - Array functions, linear algebra, reshaping
-v0.4.x  🔜 Constants       - Physical constants library
+v0.4.x  ✅ Constants       - Physical constants library
 v0.5.x     Uncertainty     - Error propagation
 v0.6.x     PyTorch         - torch.Tensor integration
 v0.7.x     JAX             - JAX array integration
@@ -75,7 +75,7 @@ v3.x       Platform        - Full physics ML toolkit
 - [x] **Searching**: `argmin`, `argmax` (return indices, not DimArrays)
 - [x] **Reshaping**: `reshape`, `transpose`, `flatten` (preserve units)
 
-### v0.4.0 - Physical Constants
+### v0.4.0 - Physical Constants ✅
 **Theme**: CODATA constants with proper units
 
 ```python
@@ -88,10 +88,10 @@ print(c)  # 299792458 m/s
 F = G * m1 * m2 / r**2  # Automatically in Newtons
 ```
 
-- [ ] **CODATA 2022 constants**: All fundamental constants
-- [ ] **Derived constants**: Planck length, Bohr radius, etc.
-- [ ] **Domain packs**: `constants.electromagnetic`, `constants.atomic`, etc.
-- [ ] **Uncertainty values**: `c.uncertainty`, `G.uncertainty`
+- [x] **CODATA 2022 constants**: All fundamental constants
+- [x] **Derived constants**: Planck length, Bohr radius, etc.
+- [x] **Domain packs**: `constants.electromagnetic`, `constants.atomic`, etc.
+- [x] **Uncertainty values**: `c.uncertainty`, `G.uncertainty`
 
 ### v0.5.0 - Uncertainty Propagation
 **Theme**: Track measurement uncertainty through calculations
@@ -434,12 +434,15 @@ dimtensor/
 
 ## Next Immediate Steps
 
-**For v0.4.0:**
-1. CODATA 2022 physical constants (c, G, h, k_B, N_A, e, m_e, etc.)
-2. Derived constants (Planck length, Bohr radius, etc.)
-3. Domain packs: `constants.electromagnetic`, `constants.atomic`
-4. Uncertainty values: `c.uncertainty`, `G.uncertainty`
+**For v0.5.0:**
+1. Uncertainty storage: Optional uncertainty array in DimArray
+2. Propagation rules: Standard error propagation formulas
+3. Correlation tracking: For correlated measurements
+4. Reporting: `value.uncertainty`, `value.relative_uncertainty`
 
-**Recently completed (v0.3.x patches):**
-- [x] Documentation site (mkdocs) with API reference
-- [x] Repr improvements with configurable precision via `config` module
+**Recently completed (v0.4.0):**
+- [x] CODATA 2022 physical constants (c, G, h, k_B, N_A, e, m_e, etc.)
+- [x] Derived constants (Planck length, Bohr radius, Hartree energy)
+- [x] Domain packs: `constants.electromagnetic`, `constants.atomic`, etc.
+- [x] Uncertainty values: `c.uncertainty`, `G.uncertainty`
+- [x] Full arithmetic integration with DimArray

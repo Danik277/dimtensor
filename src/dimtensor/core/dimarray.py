@@ -214,6 +214,11 @@ class DimArray:
 
     def __mul__(self, other: DimArray | ArrayLike) -> DimArray:
         """Multiply DimArrays (dimensions multiply)."""
+        # Handle Constant type (late import to avoid circular dependency)
+        from ..constants._base import Constant
+
+        if isinstance(other, Constant):
+            return self * other.to_dimarray()
         if isinstance(other, DimArray):
             new_unit = self._unit * other._unit
             new_data = self._data * other._data
@@ -229,6 +234,11 @@ class DimArray:
 
     def __truediv__(self, other: DimArray | ArrayLike) -> DimArray:
         """Divide DimArrays (dimensions divide)."""
+        # Handle Constant type (late import to avoid circular dependency)
+        from ..constants._base import Constant
+
+        if isinstance(other, Constant):
+            return self / other.to_dimarray()
         if isinstance(other, DimArray):
             new_unit = self._unit / other._unit
             new_data = self._data / other._data

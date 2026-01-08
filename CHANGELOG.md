@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-01-08
+
+### Added
+- **Physical constants module**: CODATA 2022 constants with proper units and uncertainties
+  - `from dimtensor.constants import c, G, h, k_B, N_A, e, m_e`
+  - Universal constants: `c` (speed of light), `G` (gravitational), `h`/`hbar` (Planck)
+  - Electromagnetic: `e` (elementary charge), `mu_0`, `epsilon_0`, `alpha` (fine-structure)
+  - Atomic: `m_e`, `m_p`, `m_n` (particle masses), `a_0` (Bohr radius), `R_inf` (Rydberg)
+  - Physico-chemical: `N_A` (Avogadro), `k_B` (Boltzmann), `R` (gas), `F` (Faraday), `sigma` (Stefan-Boltzmann)
+  - Derived Planck units: `l_P`, `m_P`, `t_P`, `T_P`, `E_h` (Hartree)
+- **Constant class**: New `Constant` type with value, unit, and uncertainty
+  - `c.uncertainty` - absolute standard uncertainty
+  - `c.relative_uncertainty` - relative uncertainty
+  - `c.is_exact` - True for defining constants (c, h, e, k_B, N_A)
+- **Constants arithmetic**: Full interoperability with DimArray
+  - `m * c**2` works seamlessly for E=mc² calculations
+  - `G * m1 * m2 / r**2` for gravitational force
+- **Domain submodules** for organized access:
+  - `dimtensor.constants.universal`
+  - `dimtensor.constants.electromagnetic`
+  - `dimtensor.constants.atomic`
+  - `dimtensor.constants.physico_chemical`
+  - `dimtensor.constants.derived`
+
 ## [0.3.1] - 2026-01-08
 
 ### Added

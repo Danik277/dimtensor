@@ -23,13 +23,16 @@ from .errors import DimensionError, UnitConversionError
 # Import all units into a 'units' namespace
 from .core import units
 
+# Physical constants
+from . import constants
+
 # Configuration
 from . import config
 
 # Module-level array functions
 from .functions import concatenate, stack, split, dot, matmul, norm
 
-__version__ = "0.3.1"
+__version__ = "0.4.0"
 
 __all__ = [
     # Core classes
@@ -50,6 +53,7 @@ __all__ = [
     "norm",
     # Modules
     "units",
+    "constants",
     "config",
     # Version
     "__version__",
