@@ -23,7 +23,10 @@ from .errors import DimensionError, UnitConversionError
 # Import all units into a 'units' namespace
 from .core import units
 
-__version__ = "0.2.0"
+# Module-level array functions
+from .functions import concatenate, stack, split, dot, matmul, norm
+
+__version__ = "0.3.0"
 
 __all__ = [
     # Core classes
@@ -35,6 +38,13 @@ __all__ = [
     # Exceptions
     "DimensionError",
     "UnitConversionError",
+    # Module-level functions
+    "concatenate",
+    "stack",
+    "split",
+    "dot",
+    "matmul",
+    "norm",
     # Modules
     "units",
     # Version

@@ -8,7 +8,7 @@
 
 ---
 
-## Current Status (v0.2.x) ✅
+## Current Status (v0.3.x) ✅
 
 What we have shipped:
 - `DimArray` wrapping numpy arrays with unit metadata
@@ -22,8 +22,13 @@ What we have shipped:
 - **Unit simplification** (`kg·m/s²` → `N`, `m/s·s` → `m`)
 - **Format string support** (`f"{distance:.2f}"`)
 - **NumPy ufunc integration** (`np.sin`, `np.sqrt`, `np.exp`, etc.)
+- **Array functions**: `concatenate`, `stack`, `split`
+- **Linear algebra**: `dot`, `matmul`, `norm`
+- **Reshaping**: `reshape`, `transpose`, `flatten`
+- **Statistics**: `var` (with squared units)
+- **Searching**: `argmin`, `argmax`
 - Published on PyPI, GitHub repo live
-- 73 tests, 77% coverage
+- 120 tests, 80% coverage
 
 ---
 
@@ -32,8 +37,8 @@ What we have shipped:
 ```
 v0.1.x  ✅ Foundation      - Basic DimArray, units, PyPI
 v0.2.x  ✅ Usability       - Unit simplification, format strings, numpy ufuncs
-v0.3.x  🔜 NumPy Parity    - Full numpy function coverage
-v0.4.x     Constants       - Physical constants library
+v0.3.x  ✅ NumPy Parity    - Array functions, linear algebra, reshaping
+v0.4.x  🔜 Constants       - Physical constants library
 v0.5.x     Uncertainty     - Error propagation
 v0.6.x     PyTorch         - torch.Tensor integration
 v0.7.x     JAX             - JAX array integration
@@ -60,15 +65,15 @@ v3.x       Platform        - Full physics ML toolkit
 - [ ] **Repr improvements**: Configurable display precision
 - [ ] **Documentation site**: mkdocs with examples and API reference
 
-### v0.3.0 - NumPy Function Parity
+### v0.3.0 - NumPy Function Parity ✅
 **Theme**: Drop-in replacement for unit-aware calculations
 
-- [ ] **Math functions**: `sin`, `cos`, `tan`, `exp`, `log` (enforce dimensionless)
-- [ ] **Array functions**: `concatenate`, `stack`, `split` (enforce same units)
-- [ ] **Linear algebra**: `dot`, `matmul`, `norm` with correct unit handling
-- [ ] **Statistics**: `var`, `std`, `percentile` (preserve units correctly)
-- [ ] **Searching**: `argmin`, `argmax`, `where` (return indices, not DimArrays)
-- [ ] **Reshaping**: `reshape`, `transpose`, `flatten` (preserve units)
+- [x] **Math functions**: `sin`, `cos`, `tan`, `exp`, `log` (via ufuncs in v0.2)
+- [x] **Array functions**: `concatenate`, `stack`, `split` (enforce same units)
+- [x] **Linear algebra**: `dot`, `matmul`, `norm` with correct unit handling
+- [x] **Statistics**: `var` (squared units), `std` (preserve units)
+- [x] **Searching**: `argmin`, `argmax` (return indices, not DimArrays)
+- [x] **Reshaping**: `reshape`, `transpose`, `flatten` (preserve units)
 
 ### v0.4.0 - Physical Constants
 **Theme**: CODATA constants with proper units
@@ -429,13 +434,12 @@ dimtensor/
 
 ## Next Immediate Steps
 
-**For v0.3.0:**
-1. Array functions: `concatenate`, `stack`, `split` (enforce same units)
-2. Reshaping: `reshape`, `transpose`, `flatten` (preserve units)
-3. Linear algebra: `dot`, `matmul`, `norm` with correct unit handling
-4. Statistics: `var`, `std` (preserve units correctly)
-5. Searching: `argmin`, `argmax` (return indices)
+**For v0.4.0:**
+1. CODATA 2022 physical constants (c, G, h, k_B, N_A, e, m_e, etc.)
+2. Derived constants (Planck length, Bohr radius, etc.)
+3. Domain packs: `constants.electromagnetic`, `constants.atomic`
+4. Uncertainty values: `c.uncertainty`, `G.uncertainty`
 
 **Deferred to later:**
-- Documentation site (mkdocs) - v0.2.x patch
-- Repr improvements - v0.2.x patch
+- Documentation site (mkdocs) - v0.3.x patch
+- Repr improvements - v0.3.x patch

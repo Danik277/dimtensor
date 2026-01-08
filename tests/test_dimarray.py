@@ -438,3 +438,156 @@ class TestPhysicsExamples:
         PE = m * g * h
         np.testing.assert_array_almost_equal(PE.data, [196.0])
         assert PE.dimension == units.J.dimension
+
+
+class TestDimArrayReshaping:
+    """Test reshaping operations."""
+
+    def test_reshape(self):
+        """Reshape preserves units."""
+        arr = DimArray([1, 2, 3, 4, 5, 6], units.m)
+        result = arr.reshape((2, 3))
+        assert result.shape == (2, 3)
+        assert result.unit == units.m
+
+    def test_reshape_with_inferred_dimension(self):
+        """Reshape with -1 for inferred dimension."""
+        arr = DimArray([1, 2, 3, 4, 5, 6], units.kg)
+        result = arr.reshape((2, -1))
+        assert result.shape == (2, 3)
+
+    def test_reshape_preserves_data(self):
+        """Reshape data matches original."""
+        arr = DimArray([1, 2, 3, 4], units.s)
+        result = arr.reshape((2, 2))
+        np.testing.assert_array_equal(result.data.flatten(), arr.data)
+
+    def test_transpose_2d(self):
+        """Transpose 2D array."""
+        arr = DimArray([[1, 2, 3], [4, 5, 6]], units.m)
+        result = arr.transpose()
+        assert result.shape == (3, 2)
+        assert result.unit == units.m
+
+    def test_transpose_with_axes(self):
+        """Transpose with explicit axes."""
+        arr = DimArray([[[1, 2], [3, 4]], [[5, 6], [7, 8]]], units.s)
+        result = arr.transpose((2, 0, 1))
+        assert result.shape == (2, 2, 2)
+
+    def test_transpose_preserves_unit(self):
+        """Transpose preserves complex unit."""
+        arr = DimArray([[1, 2], [3, 4]], units.m / units.s)
+        result = arr.transpose()
+        assert result.dimension == (units.m / units.s).dimension
+
+    def test_flatten(self):
+        """Flatten to 1D."""
+        arr = DimArray([[1, 2], [3, 4]], units.m)
+        result = arr.flatten()
+        assert result.shape == (4,)
+        np.testing.assert_array_equal(result.data, [1, 2, 3, 4])
+        assert result.unit == units.m
+
+    def test_flatten_3d(self):
+        """Flatten 3D array."""
+        arr = DimArray([[[1, 2], [3, 4]], [[5, 6], [7, 8]]], units.kg)
+        result = arr.flatten()
+        assert result.shape == (8,)
+        assert result.unit == units.kg
+
+
+class TestDimArrayVariance:
+    """Test variance operation."""
+
+    def test_var_squares_unit(self):
+        """Variance squares the unit."""
+        arr = DimArray([1.0, 2.0, 3.0, 4.0, 5.0], units.m)
+        result = arr.var()
+        # Variance of [1,2,3,4,5] = 2.0
+        np.testing.assert_array_almost_equal(result.data, [2.0])
+        # Unit should be m^2
+        assert result.dimension.length == 2
+
+    def test_var_with_axis(self):
+        """Variance along axis."""
+        arr = DimArray([[1, 2], [3, 4]], units.m)
+        result = arr.var(axis=0)
+        # Variance of [1,3] and [2,4] = [1, 1]
+        np.testing.assert_array_almost_equal(result.data, [1.0, 1.0])
+
+    def test_var_velocity_example(self):
+        """Physics: variance of velocities."""
+        velocities = DimArray([10.0, 20.0, 30.0], units.m / units.s)
+        var_v = velocities.var()
+        # Unit should be (m/s)^2 = m^2/s^2
+        assert var_v.dimension.length == 2
+        assert var_v.dimension.time == -2
+
+    def test_var_keepdims(self):
+        """Variance with keepdims."""
+        arr = DimArray([[1, 2, 3], [4, 5, 6]], units.m)
+        result = arr.var(axis=1, keepdims=True)
+        assert result.shape == (2, 1)
+
+    def test_var_vs_std_squared(self):
+        """Variance equals std squared."""
+        arr = DimArray([1.0, 2.0, 3.0, 4.0], units.m)
+        var_result = arr.var()
+        std_result = arr.std()
+        # var = std^2
+        np.testing.assert_array_almost_equal(
+            var_result.data, std_result.data**2
+        )
+
+
+class TestDimArraySearching:
+    """Test argmin and argmax operations."""
+
+    def test_argmin_returns_numpy(self):
+        """argmin returns plain numpy array."""
+        arr = DimArray([3.0, 1.0, 4.0, 1.0, 5.0], units.m)
+        result = arr.argmin()
+        assert isinstance(result, (np.ndarray, np.intp, np.integer))
+        assert result == 1  # First occurrence of minimum
+
+    def test_argmax_returns_numpy(self):
+        """argmax returns plain numpy array."""
+        arr = DimArray([3.0, 1.0, 5.0, 1.0, 4.0], units.m)
+        result = arr.argmax()
+        assert result == 2
+
+    def test_argmin_with_axis(self):
+        """argmin along axis."""
+        arr = DimArray([[3, 1], [2, 4]], units.m)
+        result = arr.argmin(axis=0)
+        np.testing.assert_array_equal(result, [1, 0])
+
+    def test_argmax_with_axis(self):
+        """argmax along axis."""
+        arr = DimArray([[3, 1], [2, 4]], units.m)
+        result = arr.argmax(axis=1)
+        np.testing.assert_array_equal(result, [0, 1])
+
+    def test_argmin_argmax_as_indices(self):
+        """Indices can be used to index original array."""
+        arr = DimArray([1.0, 2.0, 3.0], units.kg)
+        idx_min = arr.argmin()
+        idx_max = arr.argmax()
+        # Should be able to use as array indices
+        assert arr[idx_min].data[0] == 1.0
+        assert arr[idx_max].data[0] == 3.0
+
+    def test_argmin_2d_no_axis(self):
+        """argmin without axis returns flattened index."""
+        arr = DimArray([[3, 1], [2, 4]], units.m)
+        result = arr.argmin()
+        # Flattened: [3, 1, 2, 4], min at index 1
+        assert result == 1
+
+    def test_argmax_2d_no_axis(self):
+        """argmax without axis returns flattened index."""
+        arr = DimArray([[3, 1], [2, 4]], units.m)
+        result = arr.argmax()
+        # Flattened: [3, 1, 2, 4], max at index 3
+        assert result == 3

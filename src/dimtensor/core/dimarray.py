@@ -419,6 +419,90 @@ class DimArray:
             result = np.array([result])
         return DimArray._from_data_and_unit(result, self._unit)
 
+    def var(self, axis: int | None = None, keepdims: bool = False) -> DimArray:
+        """Variance of array elements.
+
+        Note: Variance has units squared (e.g., m -> m^2).
+
+        Args:
+            axis: Axis along which to compute variance.
+            keepdims: If True, reduced dimensions are kept with size 1.
+
+        Returns:
+            Variance with squared unit.
+        """
+        result = self._data.var(axis=axis, keepdims=keepdims)
+        if np.isscalar(result):
+            result = np.array([result])
+        # Variance squares the unit: m -> m^2
+        new_unit = self._unit**2
+        return DimArray._from_data_and_unit(result, new_unit)
+
+    # =========================================================================
+    # Searching operations
+    # =========================================================================
+
+    def argmin(self, axis: int | None = None) -> np.intp | NDArray[np.intp]:
+        """Return indices of minimum values.
+
+        Args:
+            axis: Axis along which to find minimum. If None, returns
+                index into flattened array.
+
+        Returns:
+            Index or array of indices (dimensionless integers).
+        """
+        return self._data.argmin(axis=axis)  # type: ignore[return-value]
+
+    def argmax(self, axis: int | None = None) -> np.intp | NDArray[np.intp]:
+        """Return indices of maximum values.
+
+        Args:
+            axis: Axis along which to find maximum. If None, returns
+                index into flattened array.
+
+        Returns:
+            Index or array of indices (dimensionless integers).
+        """
+        return self._data.argmax(axis=axis)  # type: ignore[return-value]
+
+    # =========================================================================
+    # Reshaping operations
+    # =========================================================================
+
+    def reshape(self, shape: tuple[int, ...] | list[int]) -> DimArray:
+        """Return a reshaped array with the same unit.
+
+        Args:
+            shape: New shape. One dimension may be -1, which is inferred.
+
+        Returns:
+            Reshaped DimArray with same unit.
+        """
+        new_data = self._data.reshape(shape)
+        return DimArray._from_data_and_unit(new_data, self._unit)
+
+    def transpose(self, axes: tuple[int, ...] | list[int] | None = None) -> DimArray:
+        """Permute the dimensions of the array.
+
+        Args:
+            axes: Permutation of dimensions. If None, reverses dimensions.
+
+        Returns:
+            Transposed DimArray with same unit.
+        """
+        new_data = self._data.transpose(axes)
+        return DimArray._from_data_and_unit(new_data, self._unit)
+
+    def flatten(self) -> DimArray:
+        """Return a 1D flattened copy of the array.
+
+        Returns:
+            Flattened DimArray with same unit.
+        """
+        new_data = self._data.flatten()
+        return DimArray._from_data_and_unit(new_data, self._unit)
+
     # =========================================================================
     # String representations
     # =========================================================================
