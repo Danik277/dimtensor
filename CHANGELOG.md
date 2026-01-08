@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-01-08
+
+### Added
+- **JAX integration**: `dimtensor.jax.DimArray` class
+  - Wraps JAX arrays with physical unit tracking
+  - Registered as JAX pytree node for JIT compatibility
+  - Works with `jax.jit` - units preserved through compilation
+  - Works with `jax.vmap` - vectorization with units
+  - Works with `jax.grad` - differentiation with dimensional checking
+  - Full arithmetic operations with dimensional checking
+  - Reduction operations: sum, mean, std, var, min, max
+  - Reshaping: reshape, transpose, flatten, squeeze, expand_dims
+  - Linear algebra: dot, matmul, norm with dimension multiplication
+- **Optional dependencies**: Install with `pip install dimtensor[jax]`
+- 48 new tests for JAX integration
+
+### Example
+```python
+import jax
+import jax.numpy as jnp
+from dimtensor.jax import DimArray
+from dimtensor import units
+
+@jax.jit
+def kinetic_energy(mass, velocity):
+    return 0.5 * mass * velocity**2
+
+m = DimArray(jnp.array([1.0]), units.kg)
+v = DimArray(jnp.array([10.0]), units.m / units.s)
+E = kinetic_energy(m, v)  # JIT preserves units: 50.0 J
+```
+
 ## [0.6.0] - 2026-01-08
 
 ### Added
