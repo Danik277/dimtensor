@@ -36,7 +36,7 @@ class DimArray:
         >>> v + a  # raises DimensionError
     """
 
-    __slots__ = ("_data", "_unit")
+    __slots__ = ("_data", "_unit", "_uncertainty")
 
     def __init__(
         self,
@@ -44,6 +44,7 @@ class DimArray:
         unit: Unit | None = None,
         dtype: DTypeLike = None,
         copy: bool = False,
+        uncertainty: ArrayLike | None = None,
     ) -> None:
         """Create a DimArray.
 
@@ -52,23 +53,44 @@ class DimArray:
             unit: Physical unit of the data. If None, assumes dimensionless.
             dtype: Numpy dtype for the underlying array.
             copy: If True, always copy the data.
+            uncertainty: Optional absolute uncertainty (same shape as data).
         """
         # Convert to numpy array
         if isinstance(data, DimArray):
             arr = np.array(data._data, dtype=dtype, copy=copy)
             unit = unit if unit is not None else data._unit
+            # Inherit uncertainty if not explicitly provided
+            if uncertainty is None and data._uncertainty is not None:
+                uncertainty = data._uncertainty
         else:
             arr = np.array(data, dtype=dtype, copy=copy)
 
         self._data: NDArray[Any] = arr
         self._unit: Unit = unit if unit is not None else dimensionless
 
+        # Handle uncertainty
+        if uncertainty is not None:
+            unc_arr = np.array(uncertainty, dtype=dtype, copy=copy)
+            if unc_arr.shape != arr.shape:
+                raise ValueError(
+                    f"Uncertainty shape {unc_arr.shape} must match data shape {arr.shape}"
+                )
+            self._uncertainty: NDArray[Any] | None = unc_arr
+        else:
+            self._uncertainty = None
+
     @classmethod
-    def _from_data_and_unit(cls, data: NDArray[Any], unit: Unit) -> DimArray:
+    def _from_data_and_unit(
+        cls,
+        data: NDArray[Any],
+        unit: Unit,
+        uncertainty: NDArray[Any] | None = None,
+    ) -> DimArray:
         """Internal constructor that doesn't copy data."""
         result = object.__new__(cls)
         result._data = data
         result._unit = unit
+        result._uncertainty = uncertainty
         return result
 
     # =========================================================================
@@ -117,6 +139,36 @@ class DimArray:
         """Check if this array is dimensionless."""
         return self._unit.dimension.is_dimensionless
 
+    @property
+    def uncertainty(self) -> NDArray[Any] | None:
+        """The absolute uncertainty of this array (read-only view), or None if not tracked."""
+        if self._uncertainty is None:
+            return None
+        result = self._uncertainty.view()
+        result.flags.writeable = False
+        return result
+
+    @property
+    def has_uncertainty(self) -> bool:
+        """Check if this array has uncertainty information."""
+        return self._uncertainty is not None
+
+    @property
+    def relative_uncertainty(self) -> NDArray[Any] | None:
+        """The relative uncertainty (sigma/|value|), or None if uncertainty not tracked.
+
+        Returns infinity where data values are zero.
+        """
+        if self._uncertainty is None:
+            return None
+        with np.errstate(divide="ignore", invalid="ignore"):
+            rel_unc = np.abs(self._uncertainty / self._data)
+            # Handle division by zero: where data is 0, relative uncertainty is inf
+            rel_unc = np.where(self._data == 0, np.inf, rel_unc)
+        result = rel_unc.view()
+        result.flags.writeable = False
+        return result
+
     # =========================================================================
     # Unit conversion
     # =========================================================================
@@ -129,6 +181,7 @@ class DimArray:
 
         Returns:
             New DimArray with converted values and new unit.
+            Uncertainty is scaled by the same conversion factor.
 
         Raises:
             UnitConversionError: If dimensions don't match.
@@ -138,17 +191,24 @@ class DimArray:
 
         factor = self._unit.conversion_factor(unit)
         new_data = self._data * factor
-        return DimArray._from_data_and_unit(new_data, unit)
+        new_uncertainty = None
+        if self._uncertainty is not None:
+            new_uncertainty = self._uncertainty * factor
+        return DimArray._from_data_and_unit(new_data, unit, new_uncertainty)
 
     def to_base_units(self) -> DimArray:
         """Convert to SI base units.
 
         Returns a DimArray with scale factor 1.0 (pure SI units).
+        Uncertainty is scaled accordingly.
         """
         # Create a unit with the same dimension but scale 1.0
         base_unit = Unit(str(self._unit.dimension), self._unit.dimension, 1.0)
         new_data = self._data * self._unit.scale
-        return DimArray._from_data_and_unit(new_data, base_unit)
+        new_uncertainty = None
+        if self._uncertainty is not None:
+            new_uncertainty = self._uncertainty * self._unit.scale
+        return DimArray._from_data_and_unit(new_data, base_unit, new_uncertainty)
 
     def magnitude(self) -> NDArray[Any]:
         """Return the numerical magnitude (stripping units).
@@ -156,6 +216,75 @@ class DimArray:
         Use with caution - this loses dimensional safety.
         """
         return self._data.copy()
+
+    # =========================================================================
+    # Uncertainty propagation helpers
+    # =========================================================================
+
+    @staticmethod
+    def _propagate_add_sub(
+        unc_a: NDArray[Any] | None,
+        unc_b: NDArray[Any] | None,
+    ) -> NDArray[Any] | None:
+        """Propagate uncertainty for addition/subtraction.
+
+        sigma_z = sqrt(sigma_x^2 + sigma_y^2)
+        """
+        if unc_a is None and unc_b is None:
+            return None
+        if unc_a is None:
+            return unc_b.copy()
+        if unc_b is None:
+            return unc_a.copy()
+        return np.sqrt(unc_a**2 + unc_b**2)
+
+    @staticmethod
+    def _propagate_mul_div(
+        val_a: NDArray[Any],
+        unc_a: NDArray[Any] | None,
+        val_b: NDArray[Any],
+        unc_b: NDArray[Any] | None,
+        result: NDArray[Any],
+    ) -> NDArray[Any] | None:
+        """Propagate uncertainty for multiplication/division.
+
+        sigma_z/|z| = sqrt((sigma_x/x)^2 + (sigma_y/y)^2)
+        sigma_z = |z| * sqrt((sigma_x/x)^2 + (sigma_y/y)^2)
+        """
+        if unc_a is None and unc_b is None:
+            return None
+
+        with np.errstate(divide="ignore", invalid="ignore"):
+            rel_a_sq = (unc_a / val_a) ** 2 if unc_a is not None else 0
+            rel_b_sq = (unc_b / val_b) ** 2 if unc_b is not None else 0
+            rel_combined = np.sqrt(rel_a_sq + rel_b_sq)
+            unc_result = np.abs(result) * rel_combined
+            # Handle NaN from 0/0 cases
+            unc_result = np.nan_to_num(unc_result, nan=0.0, posinf=np.inf, neginf=np.inf)
+
+        return unc_result
+
+    @staticmethod
+    def _propagate_power(
+        val: NDArray[Any],
+        unc: NDArray[Any] | None,
+        power: float,
+        result: NDArray[Any],
+    ) -> NDArray[Any] | None:
+        """Propagate uncertainty for power operation.
+
+        sigma_z/|z| = |n| * sigma_x/|x|
+        sigma_z = |z| * |n| * sigma_x/|x|
+        """
+        if unc is None:
+            return None
+
+        with np.errstate(divide="ignore", invalid="ignore"):
+            rel_unc = unc / np.abs(val)
+            unc_result = np.abs(result) * np.abs(power) * rel_unc
+            unc_result = np.nan_to_num(unc_result, nan=0.0, posinf=np.inf, neginf=np.inf)
+
+        return unc_result
 
     # =========================================================================
     # Arithmetic operations
@@ -171,7 +300,10 @@ class DimArray:
             # Convert other to same unit for consistent result
             other_converted = other.to(self._unit)
             new_data = self._data + other_converted._data
-            return DimArray._from_data_and_unit(new_data, self._unit)
+            new_uncertainty = self._propagate_add_sub(
+                self._uncertainty, other_converted._uncertainty
+            )
+            return DimArray._from_data_and_unit(new_data, self._unit, new_uncertainty)
         else:
             # Adding a raw number - only valid if dimensionless
             if not self.is_dimensionless:
@@ -179,7 +311,8 @@ class DimArray:
                     f"Cannot add dimensionless number to quantity with dimension {self.dimension}"
                 )
             new_data = self._data + np.asarray(other)
-            return DimArray._from_data_and_unit(new_data, self._unit)
+            # Scalar has no uncertainty, so uncertainty unchanged
+            return DimArray._from_data_and_unit(new_data, self._unit, self._uncertainty)
 
     def __radd__(self, other: ArrayLike) -> DimArray:
         """Right add (for scalar + DimArray)."""
@@ -194,14 +327,18 @@ class DimArray:
                 )
             other_converted = other.to(self._unit)
             new_data = self._data - other_converted._data
-            return DimArray._from_data_and_unit(new_data, self._unit)
+            new_uncertainty = self._propagate_add_sub(
+                self._uncertainty, other_converted._uncertainty
+            )
+            return DimArray._from_data_and_unit(new_data, self._unit, new_uncertainty)
         else:
             if not self.is_dimensionless:
                 raise DimensionError(
                     f"Cannot subtract dimensionless number from quantity with dimension {self.dimension}"
                 )
             new_data = self._data - np.asarray(other)
-            return DimArray._from_data_and_unit(new_data, self._unit)
+            # Scalar has no uncertainty, so uncertainty unchanged
+            return DimArray._from_data_and_unit(new_data, self._unit, self._uncertainty)
 
     def __rsub__(self, other: ArrayLike) -> DimArray:
         """Right subtract (for scalar - DimArray)."""
@@ -210,7 +347,8 @@ class DimArray:
                 f"Cannot subtract quantity with dimension {self.dimension} from dimensionless number"
             )
         new_data = np.asarray(other) - self._data
-        return DimArray._from_data_and_unit(new_data, self._unit)
+        # Scalar has no uncertainty, uncertainty unchanged in magnitude
+        return DimArray._from_data_and_unit(new_data, self._unit, self._uncertainty)
 
     def __mul__(self, other: DimArray | ArrayLike) -> DimArray:
         """Multiply DimArrays (dimensions multiply)."""
@@ -222,11 +360,22 @@ class DimArray:
         if isinstance(other, DimArray):
             new_unit = self._unit * other._unit
             new_data = self._data * other._data
-            return DimArray._from_data_and_unit(new_data, new_unit)
+            new_uncertainty = self._propagate_mul_div(
+                self._data,
+                self._uncertainty,
+                other._data,
+                other._uncertainty,
+                new_data,
+            )
+            return DimArray._from_data_and_unit(new_data, new_unit, new_uncertainty)
         else:
-            # Scalar multiplication preserves units
-            new_data = self._data * np.asarray(other)
-            return DimArray._from_data_and_unit(new_data, self._unit)
+            # Scalar multiplication: sigma_z = |scalar| * sigma_x
+            scalar = np.asarray(other)
+            new_data = self._data * scalar
+            new_uncertainty = None
+            if self._uncertainty is not None:
+                new_uncertainty = np.abs(scalar) * self._uncertainty
+            return DimArray._from_data_and_unit(new_data, self._unit, new_uncertainty)
 
     def __rmul__(self, other: ArrayLike) -> DimArray:
         """Right multiply (for scalar * DimArray)."""
@@ -242,11 +391,22 @@ class DimArray:
         if isinstance(other, DimArray):
             new_unit = self._unit / other._unit
             new_data = self._data / other._data
-            return DimArray._from_data_and_unit(new_data, new_unit)
+            new_uncertainty = self._propagate_mul_div(
+                self._data,
+                self._uncertainty,
+                other._data,
+                other._uncertainty,
+                new_data,
+            )
+            return DimArray._from_data_and_unit(new_data, new_unit, new_uncertainty)
         else:
-            # Scalar division preserves units
-            new_data = self._data / np.asarray(other)
-            return DimArray._from_data_and_unit(new_data, self._unit)
+            # Scalar division: sigma_z = sigma_x / |scalar|
+            scalar = np.asarray(other)
+            new_data = self._data / scalar
+            new_uncertainty = None
+            if self._uncertainty is not None:
+                new_uncertainty = self._uncertainty / np.abs(scalar)
+            return DimArray._from_data_and_unit(new_data, self._unit, new_uncertainty)
 
     def __rtruediv__(self, other: ArrayLike) -> DimArray:
         """Right divide (for scalar / DimArray)."""
@@ -255,26 +415,40 @@ class DimArray:
             self._unit.dimension ** -1,
             1.0 / self._unit.scale,
         )
-        new_data = np.asarray(other) / self._data
-        return DimArray._from_data_and_unit(new_data, new_unit)
+        scalar = np.asarray(other)
+        new_data = scalar / self._data
+        new_uncertainty = None
+        if self._uncertainty is not None:
+            # sigma_z/|z| = sigma_x/|x| for scalar/x
+            with np.errstate(divide="ignore", invalid="ignore"):
+                rel_unc = self._uncertainty / np.abs(self._data)
+                new_uncertainty = np.abs(new_data) * rel_unc
+                new_uncertainty = np.nan_to_num(new_uncertainty, nan=0.0)
+        return DimArray._from_data_and_unit(new_data, new_unit, new_uncertainty)
 
     def __pow__(self, power: int | float) -> DimArray:
         """Raise DimArray to a power."""
         new_unit = self._unit ** power
         new_data = self._data ** power
-        return DimArray._from_data_and_unit(new_data, new_unit)
+        new_uncertainty = self._propagate_power(
+            self._data, self._uncertainty, power, new_data
+        )
+        return DimArray._from_data_and_unit(new_data, new_unit, new_uncertainty)
 
     def __neg__(self) -> DimArray:
         """Negate values."""
-        return DimArray._from_data_and_unit(-self._data, self._unit)
+        return DimArray._from_data_and_unit(-self._data, self._unit, self._uncertainty)
 
     def __pos__(self) -> DimArray:
         """Unary positive (returns copy)."""
-        return DimArray._from_data_and_unit(+self._data, self._unit)
+        unc_copy = self._uncertainty.copy() if self._uncertainty is not None else None
+        return DimArray._from_data_and_unit(+self._data, self._unit, unc_copy)
 
     def __abs__(self) -> DimArray:
         """Absolute value."""
-        return DimArray._from_data_and_unit(np.abs(self._data), self._unit)
+        return DimArray._from_data_and_unit(
+            np.abs(self._data), self._unit, self._uncertainty
+        )
 
     def sqrt(self) -> DimArray:
         """Square root (dimension exponents halve)."""
@@ -375,12 +549,19 @@ class DimArray:
     def __getitem__(
         self, key: int | slice | NDArray[Any] | tuple[Any, ...]
     ) -> DimArray:
-        """Index into the array, preserving units."""
+        """Index into the array, preserving units and uncertainty."""
         result = self._data[key]
+        unc_result = None
+        if self._uncertainty is not None:
+            unc_result = self._uncertainty[key]
+
         # Always return DimArray to maintain dimensional safety
         if np.isscalar(result):
             result = np.array([result])
-        return DimArray._from_data_and_unit(result, self._unit)
+            if unc_result is not None:
+                unc_result = np.array([unc_result])
+
+        return DimArray._from_data_and_unit(result, self._unit, unc_result)
 
     def __len__(self) -> int:
         """Length of first dimension."""
@@ -396,44 +577,114 @@ class DimArray:
     # =========================================================================
 
     def sum(self, axis: int | None = None, keepdims: bool = False) -> DimArray:
-        """Sum of array elements."""
+        """Sum of array elements.
+
+        Uncertainty propagation: sigma_sum = sqrt(sum(sigma_i^2))
+        """
         result = self._data.sum(axis=axis, keepdims=keepdims)
         if np.isscalar(result):
             result = np.array([result])
-        return DimArray._from_data_and_unit(result, self._unit)
+
+        new_uncertainty = None
+        if self._uncertainty is not None:
+            # For sum: sigma = sqrt(sum(sigma_i^2))
+            unc_squared_sum = (self._uncertainty**2).sum(axis=axis, keepdims=keepdims)
+            new_uncertainty = np.sqrt(unc_squared_sum)
+            if np.isscalar(new_uncertainty):
+                new_uncertainty = np.array([new_uncertainty])
+
+        return DimArray._from_data_and_unit(result, self._unit, new_uncertainty)
 
     def mean(self, axis: int | None = None, keepdims: bool = False) -> DimArray:
-        """Mean of array elements."""
+        """Mean of array elements.
+
+        Uncertainty propagation: sigma_mean = sqrt(sum(sigma_i^2)) / N
+        """
         result = self._data.mean(axis=axis, keepdims=keepdims)
         if np.isscalar(result):
             result = np.array([result])
-        return DimArray._from_data_and_unit(result, self._unit)
+
+        new_uncertainty = None
+        if self._uncertainty is not None:
+            # Count elements along axis
+            if axis is None:
+                n = self._data.size
+            else:
+                n = self._data.shape[axis]
+
+            unc_squared_sum = (self._uncertainty**2).sum(axis=axis, keepdims=keepdims)
+            new_uncertainty = np.sqrt(unc_squared_sum) / n
+            if np.isscalar(new_uncertainty):
+                new_uncertainty = np.array([new_uncertainty])
+
+        return DimArray._from_data_and_unit(result, self._unit, new_uncertainty)
 
     def std(self, axis: int | None = None, keepdims: bool = False) -> DimArray:
-        """Standard deviation of array elements."""
+        """Standard deviation of array elements.
+
+        Note: Uncertainty propagation through std is complex and not implemented.
+        The result will have no uncertainty information.
+        """
         result = self._data.std(axis=axis, keepdims=keepdims)
         if np.isscalar(result):
             result = np.array([result])
-        return DimArray._from_data_and_unit(result, self._unit)
+        return DimArray._from_data_and_unit(result, self._unit, None)
 
     def min(self, axis: int | None = None, keepdims: bool = False) -> DimArray:
-        """Minimum value."""
+        """Minimum value.
+
+        Uncertainty: takes uncertainty of the minimum element.
+        """
         result = self._data.min(axis=axis, keepdims=keepdims)
         if np.isscalar(result):
             result = np.array([result])
-        return DimArray._from_data_and_unit(result, self._unit)
+
+        new_uncertainty = None
+        if self._uncertainty is not None:
+            # Get index of minimum and extract corresponding uncertainty
+            if axis is None:
+                idx = self._data.argmin()
+                new_uncertainty = np.array([self._uncertainty.flat[idx]])
+            else:
+                indices = np.expand_dims(self._data.argmin(axis=axis), axis=axis)
+                new_uncertainty = np.take_along_axis(self._uncertainty, indices, axis=axis)
+                if not keepdims:
+                    new_uncertainty = np.squeeze(new_uncertainty, axis=axis)
+                if np.isscalar(new_uncertainty):
+                    new_uncertainty = np.array([new_uncertainty])
+
+        return DimArray._from_data_and_unit(result, self._unit, new_uncertainty)
 
     def max(self, axis: int | None = None, keepdims: bool = False) -> DimArray:
-        """Maximum value."""
+        """Maximum value.
+
+        Uncertainty: takes uncertainty of the maximum element.
+        """
         result = self._data.max(axis=axis, keepdims=keepdims)
         if np.isscalar(result):
             result = np.array([result])
-        return DimArray._from_data_and_unit(result, self._unit)
+
+        new_uncertainty = None
+        if self._uncertainty is not None:
+            # Get index of maximum and extract corresponding uncertainty
+            if axis is None:
+                idx = self._data.argmax()
+                new_uncertainty = np.array([self._uncertainty.flat[idx]])
+            else:
+                indices = np.expand_dims(self._data.argmax(axis=axis), axis=axis)
+                new_uncertainty = np.take_along_axis(self._uncertainty, indices, axis=axis)
+                if not keepdims:
+                    new_uncertainty = np.squeeze(new_uncertainty, axis=axis)
+                if np.isscalar(new_uncertainty):
+                    new_uncertainty = np.array([new_uncertainty])
+
+        return DimArray._from_data_and_unit(result, self._unit, new_uncertainty)
 
     def var(self, axis: int | None = None, keepdims: bool = False) -> DimArray:
         """Variance of array elements.
 
         Note: Variance has units squared (e.g., m -> m^2).
+        Uncertainty propagation through variance is not implemented.
 
         Args:
             axis: Axis along which to compute variance.
@@ -447,7 +698,7 @@ class DimArray:
             result = np.array([result])
         # Variance squares the unit: m -> m^2
         new_unit = self._unit**2
-        return DimArray._from_data_and_unit(result, new_unit)
+        return DimArray._from_data_and_unit(result, new_unit, None)
 
     # =========================================================================
     # Searching operations
@@ -488,10 +739,13 @@ class DimArray:
             shape: New shape. One dimension may be -1, which is inferred.
 
         Returns:
-            Reshaped DimArray with same unit.
+            Reshaped DimArray with same unit and reshaped uncertainty.
         """
         new_data = self._data.reshape(shape)
-        return DimArray._from_data_and_unit(new_data, self._unit)
+        new_uncertainty = None
+        if self._uncertainty is not None:
+            new_uncertainty = self._uncertainty.reshape(shape)
+        return DimArray._from_data_and_unit(new_data, self._unit, new_uncertainty)
 
     def transpose(self, axes: tuple[int, ...] | list[int] | None = None) -> DimArray:
         """Permute the dimensions of the array.
@@ -503,7 +757,10 @@ class DimArray:
             Transposed DimArray with same unit.
         """
         new_data = self._data.transpose(axes)
-        return DimArray._from_data_and_unit(new_data, self._unit)
+        new_uncertainty = None
+        if self._uncertainty is not None:
+            new_uncertainty = self._uncertainty.transpose(axes)
+        return DimArray._from_data_and_unit(new_data, self._unit, new_uncertainty)
 
     def flatten(self) -> DimArray:
         """Return a 1D flattened copy of the array.
@@ -512,7 +769,10 @@ class DimArray:
             Flattened DimArray with same unit.
         """
         new_data = self._data.flatten()
-        return DimArray._from_data_and_unit(new_data, self._unit)
+        new_uncertainty = None
+        if self._uncertainty is not None:
+            new_uncertainty = self._uncertainty.flatten()
+        return DimArray._from_data_and_unit(new_data, self._unit, new_uncertainty)
 
     # =========================================================================
     # String representations
@@ -520,6 +780,11 @@ class DimArray:
 
     def __repr__(self) -> str:
         """Detailed representation."""
+        if self._uncertainty is not None:
+            return (
+                f"DimArray({self._data!r}, unit={self._unit.symbol!r}, "
+                f"uncertainty={self._uncertainty!r})"
+            )
         return f"DimArray({self._data!r}, unit={self._unit.symbol!r})"
 
     def __str__(self) -> str:
@@ -546,6 +811,14 @@ class DimArray:
                 max_line_width=_display.linewidth,
             )
 
+        # Add uncertainty if present
+        if self._uncertainty is not None:
+            if self._data.size == 1:
+                unc_str = f" ± {self._uncertainty.item():.{_display.precision}g}"
+            else:
+                unc_str = " ± [...]"  # Abbreviated for arrays
+            value_str = value_str + unc_str
+
         if self.is_dimensionless:
             return value_str
         # Use simplified unit symbol for display
@@ -560,6 +833,9 @@ class DimArray:
         if self._data.size == 1:
             # Single value: format directly
             value_str = format(self._data.item(), format_spec)
+            if self._uncertainty is not None:
+                unc_str = format(self._uncertainty.item(), format_spec)
+                value_str = f"{value_str} ± {unc_str}"
         else:
             # Multiple values: format each element
             if format_spec:
@@ -567,6 +843,8 @@ class DimArray:
                 value_str = "[" + ", ".join(formatted) + "]"
             else:
                 value_str = str(self._data)
+            if self._uncertainty is not None:
+                value_str += " ± [...]"
 
         if self.is_dimensionless:
             return value_str
@@ -636,15 +914,18 @@ class DimArray:
                 for inp in inputs
             ]
             result = ufunc(*raw_inputs, **kwargs)
-            return DimArray._from_data_and_unit(result, dimensionless)
+            # Drop uncertainty for dimensionless ufuncs (propagation is complex)
+            return DimArray._from_data_and_unit(result, dimensionless, None)
 
         # Handle sqrt specially - halves dimension exponents
+        # Delegates to sqrt() method which handles uncertainty via __pow__
         if ufunc is np.sqrt:
             if len(inputs) != 1 or not isinstance(inputs[0], DimArray):
                 return NotImplemented
             return inputs[0].sqrt()
 
         # Handle square - doubles dimension exponents
+        # Delegates to __pow__ which handles uncertainty
         if ufunc is np.square:
             if len(inputs) != 1 or not isinstance(inputs[0], DimArray):
                 return NotImplemented
@@ -655,7 +936,10 @@ class DimArray:
             if len(inputs) != 1 or not isinstance(inputs[0], DimArray):
                 return NotImplemented
             raw_result = ufunc(inputs[0]._data, **kwargs)
-            return DimArray._from_data_and_unit(raw_result, inputs[0]._unit)
+            # Preserve uncertainty for unit-preserving operations
+            return DimArray._from_data_and_unit(
+                raw_result, inputs[0]._unit, inputs[0]._uncertainty
+            )
 
         # Handle binary arithmetic ufuncs
         if ufunc is np.add:

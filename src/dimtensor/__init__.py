@@ -32,7 +32,7 @@ from . import config
 # Module-level array functions
 from .functions import concatenate, stack, split, dot, matmul, norm
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 __all__ = [
     # Core classes

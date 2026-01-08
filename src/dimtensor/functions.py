@@ -53,6 +53,9 @@ def concatenate(
     All arrays must have the same unit dimension. Arrays with compatible
     units (e.g., km and m) will be converted to the first array's unit.
 
+    If any arrays have uncertainty, the uncertainties are concatenated.
+    Arrays without uncertainty are treated as having zero uncertainty.
+
     Args:
         arrays: Sequence of DimArrays to concatenate.
         axis: The axis along which to concatenate (default: 0).
@@ -77,7 +80,21 @@ def concatenate(
     raw_arrays = [arr._data for arr in converted]
 
     result = np.concatenate(raw_arrays, axis=axis)
-    return DimArray._from_data_and_unit(result, unit)
+
+    # Handle uncertainty
+    any_have_uncertainty = any(arr._uncertainty is not None for arr in converted)
+    new_uncertainty = None
+    if any_have_uncertainty:
+        # If mixing with/without uncertainty, treat missing as zero
+        unc_arrays = []
+        for arr in converted:
+            if arr._uncertainty is not None:
+                unc_arrays.append(arr._uncertainty)
+            else:
+                unc_arrays.append(np.zeros_like(arr._data))
+        new_uncertainty = np.concatenate(unc_arrays, axis=axis)
+
+    return DimArray._from_data_and_unit(result, unit, new_uncertainty)
 
 
 def stack(
@@ -88,6 +105,9 @@ def stack(
 
     All arrays must have the same unit dimension. Arrays with compatible
     units (e.g., km and m) will be converted to the first array's unit.
+
+    If any arrays have uncertainty, the uncertainties are stacked.
+    Arrays without uncertainty are treated as having zero uncertainty.
 
     Args:
         arrays: Sequence of DimArrays to stack.
@@ -113,7 +133,20 @@ def stack(
     raw_arrays = [arr._data for arr in converted]
 
     result = np.stack(raw_arrays, axis=axis)
-    return DimArray._from_data_and_unit(result, unit)
+
+    # Handle uncertainty
+    any_have_uncertainty = any(arr._uncertainty is not None for arr in converted)
+    new_uncertainty = None
+    if any_have_uncertainty:
+        unc_arrays = []
+        for arr in converted:
+            if arr._uncertainty is not None:
+                unc_arrays.append(arr._uncertainty)
+            else:
+                unc_arrays.append(np.zeros_like(arr._data))
+        new_uncertainty = np.stack(unc_arrays, axis=axis)
+
+    return DimArray._from_data_and_unit(result, unit, new_uncertainty)
 
 
 def split(
@@ -130,7 +163,7 @@ def split(
         axis: The axis along which to split (default: 0).
 
     Returns:
-        List of DimArrays, all with the same unit as the input.
+        List of DimArrays, all with the same unit and uncertainty as the input.
 
     Examples:
         >>> arr = DimArray([1.0, 2.0, 3.0, 4.0], units.m)
@@ -139,10 +172,19 @@ def split(
         2
     """
     raw_splits = np.split(array._data, indices_or_sections, axis=axis)
-    return [
-        DimArray._from_data_and_unit(sub, array._unit)
-        for sub in raw_splits
-    ]
+
+    # Split uncertainty if present
+    if array._uncertainty is not None:
+        unc_splits = np.split(array._uncertainty, indices_or_sections, axis=axis)
+        return [
+            DimArray._from_data_and_unit(sub, array._unit, unc)
+            for sub, unc in zip(raw_splits, unc_splits)
+        ]
+    else:
+        return [
+            DimArray._from_data_and_unit(sub, array._unit, None)
+            for sub in raw_splits
+        ]
 
 
 def dot(a: DimArray, b: DimArray) -> DimArray:
@@ -150,6 +192,9 @@ def dot(a: DimArray, b: DimArray) -> DimArray:
 
     Dimensions multiply: if a has dimension D1 and b has dimension D2,
     the result has dimension D1 * D2.
+
+    Note: Uncertainty propagation through dot product is complex and not
+    implemented. The result will have no uncertainty information.
 
     Args:
         a: First array.
@@ -170,7 +215,8 @@ def dot(a: DimArray, b: DimArray) -> DimArray:
     if np.isscalar(result):
         result = np.array([result])
 
-    return DimArray._from_data_and_unit(result, new_unit)
+    # Uncertainty propagation through dot product is complex, drop it
+    return DimArray._from_data_and_unit(result, new_unit, None)
 
 
 def matmul(a: DimArray, b: DimArray) -> DimArray:
@@ -178,6 +224,9 @@ def matmul(a: DimArray, b: DimArray) -> DimArray:
 
     Dimensions multiply: if a has dimension D1 and b has dimension D2,
     the result has dimension D1 * D2.
+
+    Note: Uncertainty propagation through matrix multiplication is complex
+    and not implemented. The result will have no uncertainty information.
 
     Args:
         a: First array (must be at least 1D).
@@ -198,7 +247,8 @@ def matmul(a: DimArray, b: DimArray) -> DimArray:
     if np.isscalar(result):
         result = np.array([result])
 
-    return DimArray._from_data_and_unit(result, new_unit)
+    # Uncertainty propagation through matmul is complex, drop it
+    return DimArray._from_data_and_unit(result, new_unit, None)
 
 
 def norm(
@@ -210,6 +260,9 @@ def norm(
     """Compute the norm of a DimArray.
 
     The result preserves the original unit (norm of meters is meters).
+
+    Note: Uncertainty propagation through norm is complex and not
+    implemented. The result will have no uncertainty information.
 
     Args:
         array: Input array.
@@ -233,4 +286,5 @@ def norm(
     # Ensure result is at least 1D for API consistency
     result_arr = np.atleast_1d(result)
 
-    return DimArray._from_data_and_unit(result_arr, array._unit)
+    # Uncertainty propagation through norm is complex, drop it
+    return DimArray._from_data_and_unit(result_arr, array._unit, None)

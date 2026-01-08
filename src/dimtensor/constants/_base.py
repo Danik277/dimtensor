@@ -73,15 +73,21 @@ class Constant:
         return self.unit.dimension
 
     def to_dimarray(self) -> DimArray:
-        """Convert to a scalar DimArray.
+        """Convert to a scalar DimArray with uncertainty.
 
         Returns:
-            A DimArray containing the constant's value with its unit.
+            A DimArray containing the constant's value with its unit and uncertainty.
         """
         # Import here to avoid circular imports
         from ..core.dimarray import DimArray
 
-        return DimArray._from_data_and_unit(np.array([self.value]), self.unit)
+        uncertainty = None
+        if self.uncertainty > 0:
+            uncertainty = np.array([self.uncertainty])
+
+        return DimArray._from_data_and_unit(
+            np.array([self.value]), self.unit, uncertainty
+        )
 
     # =========================================================================
     # Arithmetic operations
@@ -94,21 +100,32 @@ class Constant:
             other: Constant, DimArray, or scalar.
 
         Returns:
-            DimArray with the result.
+            DimArray with the result, with propagated uncertainty.
         """
         from ..core.dimarray import DimArray
 
         if isinstance(other, Constant):
             new_unit = self.unit * other.unit
             new_value = self.value * other.value
+            # Propagate uncertainty: sigma_z/|z| = sqrt((sigma_a/a)^2 + (sigma_b/b)^2)
+            new_uncertainty = None
+            if self.uncertainty > 0 or other.uncertainty > 0:
+                rel_a_sq = (self.uncertainty / self.value) ** 2 if self.value != 0 else 0
+                rel_b_sq = (other.uncertainty / other.value) ** 2 if other.value != 0 else 0
+                rel_combined = np.sqrt(rel_a_sq + rel_b_sq)
+                new_uncertainty = np.array([abs(new_value) * rel_combined])
             return DimArray._from_data_and_unit(
-                np.array([new_value]), new_unit.simplified()
+                np.array([new_value]), new_unit.simplified(), new_uncertainty
             )
         elif isinstance(other, DimArray):
             return self.to_dimarray() * other
         elif isinstance(other, int | float):
+            # Scalar multiplication: uncertainty scales with scalar
+            new_uncertainty = None
+            if self.uncertainty > 0:
+                new_uncertainty = np.array([abs(other) * self.uncertainty])
             return DimArray._from_data_and_unit(
-                np.array([self.value * other]), self.unit
+                np.array([self.value * other]), self.unit, new_uncertainty
             )
         return NotImplemented
 
@@ -129,21 +146,32 @@ class Constant:
             other: Constant, DimArray, or scalar.
 
         Returns:
-            DimArray with the result.
+            DimArray with the result, with propagated uncertainty.
         """
         from ..core.dimarray import DimArray
 
         if isinstance(other, Constant):
             new_unit = self.unit / other.unit
             new_value = self.value / other.value
+            # Propagate uncertainty: sigma_z/|z| = sqrt((sigma_a/a)^2 + (sigma_b/b)^2)
+            new_uncertainty = None
+            if self.uncertainty > 0 or other.uncertainty > 0:
+                rel_a_sq = (self.uncertainty / self.value) ** 2 if self.value != 0 else 0
+                rel_b_sq = (other.uncertainty / other.value) ** 2 if other.value != 0 else 0
+                rel_combined = np.sqrt(rel_a_sq + rel_b_sq)
+                new_uncertainty = np.array([abs(new_value) * rel_combined])
             return DimArray._from_data_and_unit(
-                np.array([new_value]), new_unit.simplified()
+                np.array([new_value]), new_unit.simplified(), new_uncertainty
             )
         elif isinstance(other, DimArray):
             return self.to_dimarray() / other
         elif isinstance(other, int | float):
+            # Scalar division: uncertainty scales inversely
+            new_uncertainty = None
+            if self.uncertainty > 0:
+                new_uncertainty = np.array([self.uncertainty / abs(other)])
             return DimArray._from_data_and_unit(
-                np.array([self.value / other]), self.unit
+                np.array([self.value / other]), self.unit, new_uncertainty
             )
         return NotImplemented
 
@@ -159,8 +187,14 @@ class Constant:
                 self.unit.dimension ** -1,
                 1.0 / self.unit.scale,
             )
+            new_value = other / self.value
+            # For scalar/constant: sigma_z/|z| = sigma_x/|x|
+            new_uncertainty = None
+            if self.uncertainty > 0 and self.value != 0:
+                rel_unc = self.uncertainty / abs(self.value)
+                new_uncertainty = np.array([abs(new_value) * rel_unc])
             return DimArray._from_data_and_unit(
-                np.array([other / self.value]), new_unit.simplified()
+                np.array([new_value]), new_unit.simplified(), new_uncertainty
             )
         return NotImplemented
 
@@ -171,21 +205,31 @@ class Constant:
             power: Exponent (int or float).
 
         Returns:
-            DimArray with the result.
+            DimArray with the result, with propagated uncertainty.
         """
         from ..core.dimarray import DimArray
 
         new_unit = self.unit ** power
         new_value = self.value ** power
+        # Propagate uncertainty: sigma_z/|z| = |n| * sigma_x/|x|
+        new_uncertainty = None
+        if self.uncertainty > 0 and self.value != 0:
+            rel_unc = self.uncertainty / abs(self.value)
+            new_uncertainty = np.array([abs(new_value) * abs(power) * rel_unc])
         return DimArray._from_data_and_unit(
-            np.array([new_value]), new_unit.simplified()
+            np.array([new_value]), new_unit.simplified(), new_uncertainty
         )
 
     def __neg__(self) -> DimArray:
         """Negate the constant."""
         from ..core.dimarray import DimArray
 
-        return DimArray._from_data_and_unit(np.array([-self.value]), self.unit)
+        uncertainty = None
+        if self.uncertainty > 0:
+            uncertainty = np.array([self.uncertainty])
+        return DimArray._from_data_and_unit(
+            np.array([-self.value]), self.unit, uncertainty
+        )
 
     def __pos__(self) -> DimArray:
         """Unary positive (returns DimArray copy)."""
