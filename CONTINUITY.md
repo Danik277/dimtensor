@@ -18,8 +18,8 @@ Setup complete - ready for worker agent to begin
 
 ### Task Queue (Priority Order)
 1. [DONE] Set up autonomous work system
-2. [PENDING] Complete v0.5.0: Correlation tracking → deploy to PyPI
-3. [PENDING] Implement v0.6.0: PyTorch DimTensor → deploy to PyPI
+2. [DONE] Complete v0.5.0: Uncertainty propagation → deployed to PyPI
+3. [IN PROGRESS] Implement v0.6.0: PyTorch DimTensor → deploy to PyPI
 4. [PENDING] Implement v0.7.0: JAX integration → deploy to PyPI
 5. [PENDING] Implement v0.8.0: Performance optimization → deploy to PyPI
 6. [PENDING] Implement v0.9.0: Serialization → deploy to PyPI

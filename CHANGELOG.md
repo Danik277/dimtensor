@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-01-08
+
+### Added
+- **PyTorch integration**: `dimtensor.torch.DimTensor` class
+  - Wraps `torch.Tensor` with physical unit tracking
+  - Full arithmetic operations with dimensional checking
+  - Autograd support - gradients flow through unit-aware operations
+  - Device support: CPU, CUDA, MPS via `.to()`, `.cuda()`, `.cpu()`
+  - dtype support: float32, float64, float16, bfloat16
+  - Reduction operations: sum, mean, std, var, min, max, norm
+  - Reshaping: reshape, view, transpose, permute, flatten, squeeze, unsqueeze
+  - Linear algebra: matmul, dot with dimension multiplication
+  - Indexing and slicing with unit preservation
+- **Optional dependencies**: Install with `pip install dimtensor[torch]`
+- 60 new tests for PyTorch integration
+
+### Example
+```python
+import torch
+from dimtensor.torch import DimTensor
+from dimtensor import units
+
+velocity = DimTensor(torch.randn(32, 3), units.m / units.s)
+velocity.requires_grad_(True)
+energy = 0.5 * mass * velocity**2
+energy.sum().backward()  # Gradients flow correctly
+```
+
 ## [0.5.0] - 2026-01-08
 
 ### Added
