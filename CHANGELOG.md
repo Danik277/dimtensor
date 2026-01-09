@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.0] - 2026-01-09
+
+### Added
+- **SymPy Integration** (`from dimtensor.sympy import ...`)
+  - **Conversion functions**:
+    - `to_sympy(arr)` - Convert DimArray to SymPy expression with units
+    - `from_sympy(expr)` - Convert SymPy expression to DimArray
+    - `sympy_unit_for(unit)` - Get SymPy unit for a dimtensor Unit
+  - **Symbolic calculus with units**:
+    - `symbolic_diff(expr, var)` - Differentiate with dimensional tracking (position -> velocity)
+    - `symbolic_integrate(expr, var)` - Integrate with dimensional tracking (acceleration -> velocity)
+    - `simplify_units(expr)` - Simplify unit expressions
+    - `substitute(expr, values)` - Substitute values into symbolic expression
+
+- 17 new tests for SymPy integration
+- New optional dependency: `pip install dimtensor[sympy]`
+
+### Changed
+- Total test count: 721 -> 738 passed (63 skipped)
+- Source files: 62 -> 65 (3 new modules)
+
 ## [3.1.0] - 2026-01-09
 
 ### Added

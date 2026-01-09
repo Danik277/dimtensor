@@ -91,19 +91,19 @@ IMPORTANT: DO NOT STOP. EVER. KEEP WORKING.
 ## CURRENT STATE
 
 **Date**: 2026-01-09
-**Version**: 3.1.0
-**Status**: v3.1.0 deployed to PyPI - https://pypi.org/project/dimtensor/3.1.0/
+**Version**: 3.2.0
+**Status**: v3.2.0 deployed to PyPI - https://pypi.org/project/dimtensor/3.2.0/
 
 ### What Just Happened
-- v3.1.0 Ecosystem Integration COMPLETE:
-  - SciPy integration (scipy/optimize.py, integrate.py, interpolate.py)
-  - Scikit-learn integration (sklearn/transformers.py)
-  - Polars integration (io/polars.py)
-- 721 tests pass, 63 skipped, mypy clean (62 source files)
+- v3.2.0 SymPy Integration COMPLETE:
+  - sympy/conversion.py: to_sympy, from_sympy, sympy_unit_for
+  - sympy/calculus.py: symbolic_diff, symbolic_integrate, simplify_units, substitute
+  - Bridge between numerical (DimArray) and symbolic (SymPy) computation
+- 738 tests pass, 63 skipped, mypy clean (65 source files)
 
 ### What Needs to Happen
 - Continue improving the library
-- Consider v3.2.0 features: SymPy integration, more ecosystem tools
+- Consider v3.3.0 features: more equation solvers, advanced dataset loaders
 
 ---
 
@@ -345,17 +345,27 @@ Note: Core inference (tasks 78-81) shipped in v2.0.0
 
 ---
 
-### v3.2.0 - SymPy Integration & Advanced Features
+### v3.2.0 - SymPy Integration
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 129 | 🗺️ SymPy integration | PENDING | PLAN REQUIRED: symbolic computing bridge |
-| 130 | Implement to_sympy(), from_sympy() | PENDING | |
-| 131 | Implement symbolic differentiation | PENDING | |
-| 132 | 🗺️ Advanced dataset loaders | PENDING | PLAN REQUIRED |
-| 133 | Implement real physics data downloads | PENDING | |
-| 134 | Add more equations to database | PENDING | |
-| 135 | Deploy v3.2.0 to PyPI | PENDING | |
+| 129 | 🗺️ SymPy integration | DONE | Plan: .plans/2026-01-09_sympy-integration.md |
+| 130 | Implement to_sympy(), from_sympy() | DONE | sympy/conversion.py |
+| 131 | Implement symbolic differentiation | DONE | sympy/calculus.py |
+| 132 | Add tests for SymPy integration | DONE | 17 tests in test_sympy.py |
+| 133 | Deploy v3.2.0 to PyPI | DONE | https://pypi.org/project/dimtensor/3.2.0/ |
+
+---
+
+### v3.3.0 - Advanced Features
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 134 | 🗺️ Advanced dataset loaders | PENDING | PLAN REQUIRED |
+| 135 | Implement real physics data downloads | PENDING | |
+| 136 | Add more equations to database | PENDING | |
+| 137 | 🗺️ Automatic unit inference for equations | PENDING | |
+| 138 | Deploy v3.3.0 to PyPI | PENDING | |
 
 ---
 
@@ -623,6 +633,14 @@ Format: Use sequential numbers. Add new entries at the bottom.
 103. 721 tests pass, 63 skipped, mypy clean (62 source files)
 104. Task #128: Deployed v3.1.0 to PyPI: https://pypi.org/project/dimtensor/3.1.0/
 105. v3.1.0 COMPLETE - Ecosystem Integration released
+106. v3.2.0 - SymPy Integration:
+     - Created sympy/conversion.py (to_sympy, from_sympy, sympy_unit_for)
+     - Created sympy/calculus.py (symbolic_diff, symbolic_integrate, simplify_units, substitute)
+     - Bridge numerical DimArray to symbolic SymPy expressions with unit preservation
+     - 17 tests in test_sympy.py
+107. 738 tests pass, 63 skipped, mypy clean (65 source files)
+108. Task #133: Deployed v3.2.0 to PyPI: https://pypi.org/project/dimtensor/3.2.0/
+109. v3.2.0 COMPLETE - SymPy Integration released
 
 ---
 
