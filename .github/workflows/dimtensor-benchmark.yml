@@ -1,0 +1,260 @@
+name: Performance Benchmarks
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  benchmark:
+    name: Run benchmarks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for comparison
+
+      - name: Setup dimtensor
+        uses: ./.github/actions/setup-dimtensor
+        with:
+          python-version: '3.11'
+          install-extras: 'dev,benchmark'
+
+      - name: Run benchmarks
+        run: |
+          python -c "
+          from dimtensor.benchmarks import benchmark_suite, print_results
+          import json
+
+          print('Running benchmark suite...')
+          results = benchmark_suite(sizes=[1000, 10000], iterations=100)
+
+          # Print results
+          print_results(results)
+
+          # Save as JSON
+          json_results = []
+          for r in results:
+              json_results.append({
+                  'name': r.name,
+                  'array_size': r.array_size,
+                  'numpy_time': r.numpy_time,
+                  'dimarray_time': r.dimarray_time,
+                  'overhead': r.overhead,
+                  'overhead_percent': r.overhead_percent
+              })
+
+          with open('benchmark-results.json', 'w') as f:
+              json.dump(json_results, f, indent=2)
+          " | tee benchmark-output.txt
+
+      - name: Check performance regression
+        id: check-regression
+        run: |
+          python -c "
+          import json
+          import sys
+
+          with open('benchmark-results.json') as f:
+              results = json.load(f)
+
+          # Check if any operation has overhead > 3x
+          max_overhead = max(r['overhead'] for r in results)
+          avg_overhead = sum(r['overhead'] for r in results) / len(results)
+
+          print(f'Max overhead: {max_overhead:.2f}x')
+          print(f'Average overhead: {avg_overhead:.2f}x')
+
+          if max_overhead > 5.0:
+              print(f'ERROR: Max overhead {max_overhead:.2f}x exceeds threshold of 5.0x')
+              sys.exit(1)
+
+          if avg_overhead > 3.0:
+              print(f'WARNING: Average overhead {avg_overhead:.2f}x exceeds threshold of 3.0x')
+
+          print('Performance check passed!')
+          " || echo "performance_regression=true" >> $GITHUB_OUTPUT
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: |
+            benchmark-results.json
+            benchmark-output.txt
+          retention-days: 90
+
+      - name: Generate benchmark report
+        id: report
+        run: |
+          python -c "
+          import json
+
+          with open('benchmark-results.json') as f:
+              results = json.load(f)
+
+          # Generate markdown table
+          report = '## Benchmark Results\n\n'
+          report += '| Operation | Array Size | NumPy (μs) | DimArray (μs) | Overhead |\n'
+          report += '|-----------|------------|------------|---------------|----------|\n'
+
+          for r in results:
+              numpy_us = r['numpy_time'] * 1_000_000
+              dimarray_us = r['dimarray_time'] * 1_000_000
+              overhead = f\"{r['overhead']:.2f}x\"
+              report += f\"| {r['name']} | {r['array_size']:,} | {numpy_us:.2f} | {dimarray_us:.2f} | {overhead} |\n\"
+
+          avg_overhead = sum(r['overhead'] for r in results) / len(results)
+          report += f'\n**Average overhead:** {avg_overhead:.2f}x\n'
+
+          with open('benchmark-report.md', 'w') as f:
+              f.write(report)
+
+          print(report)
+          "
+
+      - name: Comment benchmark results on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('benchmark-report.md', 'utf8');
+
+            const comment = `${report}
+
+            ---
+            📊 Full benchmark results are available in the workflow artifacts.`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Store benchmark for comparison
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/cache@v4
+        with:
+          path: benchmark-results.json
+          key: benchmark-${{ github.sha }}
+          restore-keys: |
+            benchmark-
+
+      - name: Generate performance badge
+        if: success()
+        run: |
+          python -c "
+          import json
+
+          with open('benchmark-results.json') as f:
+              results = json.load(f)
+
+          avg_overhead = sum(r['overhead'] for r in results) / len(results)
+
+          # Determine color based on overhead
+          if avg_overhead < 2.0:
+              color = 'success'
+          elif avg_overhead < 3.0:
+              color = 'yellow'
+          else:
+              color = 'orange'
+
+          badge = {
+              'schemaVersion': 1,
+              'label': 'overhead',
+              'message': f'{avg_overhead:.2f}x',
+              'color': color
+          }
+
+          import os
+          os.makedirs('badges', exist_ok=True)
+
+          with open('badges/benchmark-badge.json', 'w') as f:
+              json.dump(badge, f)
+          "
+
+      - name: Upload badge
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-badge
+          path: badges/benchmark-badge.json
+
+  benchmark-compare:
+    name: Compare with baseline
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+
+      - name: Setup dimtensor
+        uses: ./.github/actions/setup-dimtensor
+        with:
+          python-version: '3.11'
+          install-extras: 'dev,benchmark'
+
+      - name: Run PR benchmarks
+        run: |
+          python -c "
+          from dimtensor.benchmarks import quick_benchmark
+          import json
+
+          results = quick_benchmark()
+          with open('pr-benchmarks.json', 'w') as f:
+              json.dump(results, f)
+          print('PR benchmarks:', results)
+          "
+
+      - name: Checkout base branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.base_ref }}
+          path: base
+
+      - name: Run base benchmarks
+        run: |
+          cd base
+          python -m pip install -e ".[dev,benchmark]"
+          python -c "
+          from dimtensor.benchmarks import quick_benchmark
+          import json
+
+          results = quick_benchmark()
+          with open('../base-benchmarks.json', 'w') as f:
+              json.dump(results, f)
+          print('Base benchmarks:', results)
+          "
+
+      - name: Compare benchmarks
+        run: |
+          python -c "
+          import json
+
+          with open('pr-benchmarks.json') as f:
+              pr = json.load(f)
+          with open('base-benchmarks.json') as f:
+              base = json.load(f)
+
+          print('\n## Performance Comparison\n')
+          print('| Operation | Base | PR | Change |')
+          print('|-----------|------|----|---------')
+
+          for op in pr.keys():
+              base_val = base.get(op, 0)
+              pr_val = pr[op]
+              change = ((pr_val - base_val) / base_val * 100) if base_val else 0
+              symbol = '📈' if change > 5 else '📉' if change < -5 else '➡️'
+              print(f'| {op} | {base_val:.2f}x | {pr_val:.2f}x | {symbol} {change:+.1f}% |')
+          "

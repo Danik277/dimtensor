@@ -105,7 +105,7 @@ IMPORTANT: DO NOT STOP. EVER. KEEP WORKING.
 
 - Agent read full file: YES
 - Current task understood: YES
-- Current task: v3.6.0 Performance & GPU - COMPLETE
+- Current task: v4.0.0 Platform Maturity - COMPLETE
 - Session started: 2026-01-09 evening
 
 ---
@@ -113,44 +113,49 @@ IMPORTANT: DO NOT STOP. EVER. KEEP WORKING.
 ## CURRENT STATE
 
 **Date**: 2026-01-09
-**Version**: 3.6.0
-**Status**: v3.6.0 ready for deployment - PR branch ready
+**Version**: 4.0.0
+**Status**: v4.0.0 ready for deployment - branch ready
 
 ### What Just Happened
-- v3.6.0 Performance & GPU COMPLETE:
-  - **CUDA Profiling** (torch/benchmarks.py - 795 lines):
-    - cuda_timer() context manager with CUDA Events
-    - 11 benchmark functions for GPU operations
-    - torch.profiler integration
-    - CPU fallback when CUDA unavailable
-  - **Benchmark Suite** (benchmarks/ directory):
-    - ASV configuration for historical tracking
-    - 97 benchmarks across NumPy, PyTorch, competitors
-    - suites/numpy_ops.py, torch_ops.py, competitors.py
-    - HTML reports and CI-ready structure
-  - **Memory Profiling** (profiling.py):
-    - memory_stats(), memory_report(), get_overhead_ratio()
-    - MemoryProfiler context manager
-    - GPU memory tracking, shared metadata analysis
-    - Actionable optimization recommendations
-  - 4 new plan documents in .plans/
-  - 58 new tests (903 total pass, 87 skipped)
-- Version updated to 3.6.0 in pyproject.toml and __init__.py
-- CUDA kernels (#171) and Rust optimization (#172) deferred to v3.7.0
+- v4.0.0 Platform Maturity COMPLETE:
+  - **Plugin System** (plugins/ module):
+    - PluginRegistry with lazy loading, validation
+    - Entry points discovery (dimtensor.plugins group)
+    - CLI: `dimtensor plugins list/info`
+    - 36 new tests
+  - **Web Dashboard** (web/ module):
+    - Streamlit multi-page app
+    - Models, Datasets, Equations browsers
+    - LaTeX rendering, code generation
+    - Deployment-ready for Streamlit Cloud
+  - **MLflow Integration** (integrations/mlflow.py):
+    - log_dimarray, DimMLflowCallback
+    - Unit metadata in MLflow tags
+  - **W&B Integration** (integrations/wandb.py):
+    - log_dimarray, DimWandbCallback
+    - Unit columns in wandb Tables
+  - **CI/CD Templates** (.github/workflows/):
+    - dimtensor-lint.yml, dimtensor-test.yml, dimtensor-benchmark.yml
+    - setup-dimtensor composite action
+    - docs/guide/ci-cd.md
+  - 7 new plan documents in .plans/
+  - 939 tests pass (36 new, 89 skipped)
+- Version updated to 4.0.0 in pyproject.toml and __init__.py
+- VS Code extension (#176-177) deferred (separate repo, plan exists)
 
 ### What Needs to Happen
-- Push branch to remote
+- Commit and push branch
 - User merges PR to main
-- Local agent deploys v3.6.0 to PyPI
-- Continue with v4.0.0+ tasks
+- Deploy v3.6.0 + v4.0.0 to PyPI (local)
+- Continue with v4.1.0+ tasks
 
 ---
 
 ## CURRENT TASK
 
-**Task**: v3.6.0 - Performance & GPU
+**Task**: v4.0.0 - Platform Maturity
 
-**Goal**: Comprehensive performance profiling tools for dimtensor
+**Goal**: Ecosystem and community features
 
 **Status**: COMPLETE - Ready for commit and push
 
@@ -491,16 +496,16 @@ Note: Core inference (tasks 78-81) shipped in v2.0.0
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 176 | 🗺️ Create VS Code extension skeleton | PENDING | |
-| 177 | Implement dimensional linting in extension | PENDING | Red squiggles for unit errors |
-| 178 | 🗺️ Design plugin system for custom units | PENDING | |
-| 179 | Implement plugin registry | PENDING | |
-| 180 | Create community unit submission flow | PENDING | |
-| 181 | 🗺️ Build web dashboard for model hub | PENDING | Browse models, datasets |
-| 182 | Add MLflow integration | PENDING | Log units with experiments |
-| 183 | Add Weights & Biases integration | PENDING | |
-| 184 | Create CI/CD templates | PENDING | GitHub Actions for unit tests |
-| 185 | Deploy v4.0.0 to PyPI | PENDING | |
+| 176 | 🗺️ Create VS Code extension skeleton | DEFERRED | Plan exists, separate repo needed |
+| 177 | Implement dimensional linting in extension | DEFERRED | Depends on #176 |
+| 178 | 🗺️ Design plugin system for custom units | DONE | Plan + implementation complete |
+| 179 | Implement plugin registry | DONE | plugins/ module, CLI commands |
+| 180 | Create community unit submission flow | DEFERRED | Documentation only for v4.0.0 |
+| 181 | 🗺️ Build web dashboard for model hub | DONE | web/ module, Streamlit |
+| 182 | Add MLflow integration | DONE | integrations/mlflow.py |
+| 183 | Add Weights & Biases integration | DONE | integrations/wandb.py |
+| 184 | Create CI/CD templates | DONE | .github/workflows/, docs/guide/ci-cd.md |
+| 185 | Deploy v4.0.0 to PyPI | PENDING | Ready for local deploy |
 
 ---
 
@@ -1094,6 +1099,38 @@ Format: Use sequential numbers. Add new entries at the bottom.
 156. PR merged, pulled main branch
 157. Fixed pyproject.toml metadata version (2.3) for twine compatibility
 158. PyPI deploy blocked by web environment proxy - ready for local deploy
+
+### Session: 2026-01-09 evening (v4.0.0 Platform Orchestrator)
+
+159. Started orchestrator for v4.0.0 Platform Maturity
+160. Spawned 6 agents in parallel:
+     - 3 planners: VS Code extension, plugin system, web dashboard
+     - 3 implementers: MLflow, W&B, CI/CD templates
+161. All 3 plans COMPLETE:
+     - .plans/2026-01-09_vscode-extension.md
+     - .plans/2026-01-09_plugin-system.md
+     - .plans/2026-01-09_web-dashboard.md
+162. All 3 implementations COMPLETE:
+     - integrations/mlflow.py (362 lines)
+     - integrations/wandb.py (397 lines)
+     - .github/workflows/ (lint, test, benchmark)
+     - docs/guide/ci-cd.md
+163. Spawned 2 more implementers:
+     - Plugin system implementation
+     - Web dashboard implementation
+164. Plugin system COMPLETE:
+     - plugins/ module (registry, loader, validation, metadata)
+     - CLI commands: dimtensor plugins list/info
+     - 36 new tests
+165. Web dashboard COMPLETE:
+     - web/ module (Streamlit multi-page app)
+     - streamlit_app.py root entry
+     - .streamlit/config.toml theme
+166. 939 tests pass, 89 skipped (36 new tests)
+167. Version updated to 4.0.0 in pyproject.toml and __init__.py
+168. CHANGELOG.md updated with v4.0.0 release notes
+169. VS Code extension (#176-177) DEFERRED (separate repo, plan exists)
+170. v4.0.0 READY - Awaiting commit, push, PR merge and PyPI deployment
 
 ---
 

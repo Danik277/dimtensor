@@ -5,6 +5,63 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] - 2026-01-09
+
+### Added
+- **Platform Maturity** - Ecosystem and community features
+
+  - **Plugin System** (`from dimtensor import plugins`):
+    - `discover_plugins()` - Find all dimtensor-units-* packages via entry points
+    - `load_plugin(name)` - Load and register plugin units
+    - `list_plugins()` - List available plugins
+    - `get_unit(plugin_name, unit_name)` - Get unit from plugin
+    - `PluginRegistry` class with lazy loading and caching
+    - Plugin validation and conflict resolution
+    - CLI: `python -m dimtensor plugins list/info`
+    - Entry point group: `dimtensor.plugins`
+
+  - **Web Dashboard** (`pip install dimtensor[web]`):
+    - Streamlit-based multi-page dashboard
+    - Models browser with domain/tag filtering and search
+    - Datasets browser with schema and unit display
+    - Equations browser with LaTeX rendering (67+ equations)
+    - Code generation snippets for each resource
+    - Root entry: `streamlit run streamlit_app.py`
+    - Deployment-ready for Streamlit Cloud
+
+  - **MLflow Integration** (`pip install dimtensor[mlflow]`):
+    - `log_dimarray(name, value)` - Log DimArray with unit metadata
+    - `log_unit_param(name, value)` - Log parameters with units
+    - `DimMLflowCallback` - Auto-log units during training
+    - `compare_metrics_with_units()` - Unit-aware metric comparison
+    - Units stored as MLflow tags
+
+  - **Weights & Biases Integration** (`pip install dimtensor[wandb]`):
+    - `log_dimarray(name, value)` - Log DimArray to W&B
+    - `DimWandbCallback` - Training loop integration
+    - `log_config_with_units(config)` - Config with unit metadata
+    - `create_dimarray_table()` - W&B Tables with unit columns
+
+  - **CI/CD Templates** (`.github/workflows/`):
+    - `dimtensor-lint.yml` - Dimensional linting workflow
+    - `dimtensor-test.yml` - Multi-Python, multi-OS testing
+    - `dimtensor-benchmark.yml` - Performance regression detection
+    - `setup-dimtensor` composite action for caching
+    - Complete example in `examples/github-workflow-example.yml`
+    - Documentation in `docs/guide/ci-cd.md`
+
+### Changed
+- Total test count: 903 → 939 passed (89 skipped)
+- 36 new tests for plugin system
+- New optional dependencies: mlflow, wandb, web (streamlit)
+
+### Deferred
+- VS Code extension (task #176-177) - Separate repository, plan exists
+- CUDA kernels (task #171) - v3.7.0
+- Rust optimization (task #172) - v3.7.0
+
+---
+
 ## [3.6.0] - 2026-01-09
 
 ### Added

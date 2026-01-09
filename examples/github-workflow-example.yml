@@ -1,0 +1,339 @@
+# Example GitHub Actions workflow for projects using dimtensor
+#
+# This is a complete example that shows how to integrate dimensional linting,
+# testing, and benchmarking into your CI/CD pipeline.
+#
+# Copy this file to .github/workflows/ in your repository and customize as needed.
+
+name: CI with dimtensor
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  # ============================================================================
+  # DIMENSIONAL LINTING
+  # ============================================================================
+  lint-dimensions:
+    name: Check dimensional consistency
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup dimtensor
+        uses: marcoloco23/dimtensor/.github/actions/setup-dimtensor@main
+        with:
+          python-version: '3.11'
+          install-extras: 'dev'
+
+      - name: Run dimensional linter
+        run: |
+          python -m dimtensor lint src/ --format text
+
+      - name: Check for dimensional errors
+        if: failure()
+        run: |
+          echo "::error::Dimensional inconsistencies detected!"
+          echo "Please fix the dimensional errors before merging."
+          exit 1
+
+  # ============================================================================
+  # UNIT TESTS
+  # ============================================================================
+  test:
+    name: Test on ${{ matrix.os }} / Python ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ['3.10', '3.11', '3.12']
+        exclude:
+          # Test all Python versions on Linux only
+          - os: macos-latest
+            python-version: '3.10'
+          - os: macos-latest
+            python-version: '3.12'
+          - os: windows-latest
+            python-version: '3.10'
+          - os: windows-latest
+            python-version: '3.12'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup dimtensor
+        uses: marcoloco23/dimtensor/.github/actions/setup-dimtensor@main
+        with:
+          python-version: ${{ matrix.python-version }}
+          install-extras: 'dev,torch,jax'
+
+      - name: Run unit tests
+        run: |
+          pytest tests/ \
+            --verbose \
+            --cov=src \
+            --cov-report=xml \
+            --cov-report=term-missing
+
+      - name: Verify dimensional safety
+        run: |
+          python -c "
+          from dimtensor import DimArray, units
+          import numpy as np
+
+          # Basic dimensional safety test
+          distance = DimArray([100, 200, 300], units.m)
+          time = DimArray([10, 20, 30], units.s)
+
+          # Valid operations
+          velocity = distance / time
+          assert str(velocity.unit) == 'm/s'
+
+          # Should raise error
+          try:
+              invalid = distance + time
+              raise AssertionError('Should have raised DimensionError')
+          except Exception as e:
+              assert 'dimension' in str(e).lower()
+
+          print('✓ Dimensional safety verified')
+          "
+
+      - name: Upload coverage
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          fail_ci_if_error: false
+
+  # ============================================================================
+  # TYPE CHECKING
+  # ============================================================================
+  type-check:
+    name: Type checking
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup dimtensor
+        uses: marcoloco23/dimtensor/.github/actions/setup-dimtensor@main
+        with:
+          python-version: '3.11'
+          install-extras: 'dev'
+
+      - name: Run mypy
+        run: |
+          mypy src/ --ignore-missing-imports --strict
+
+  # ============================================================================
+  # PERFORMANCE BENCHMARKS
+  # ============================================================================
+  benchmark:
+    name: Performance benchmarks
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+
+      - name: Setup dimtensor
+        uses: marcoloco23/dimtensor/.github/actions/setup-dimtensor@main
+        with:
+          python-version: '3.11'
+          install-extras: 'dev,benchmark'
+
+      - name: Run benchmarks on PR
+        run: |
+          python -c "
+          from dimtensor.benchmarks import benchmark_suite, print_results
+          import json
+
+          print('Running benchmarks on PR branch...')
+          results = benchmark_suite(sizes=[1000, 10000], iterations=100)
+
+          print_results(results)
+
+          # Save results
+          json_data = [
+              {
+                  'name': r.name,
+                  'size': r.array_size,
+                  'overhead': r.overhead
+              }
+              for r in results
+          ]
+
+          with open('pr-benchmarks.json', 'w') as f:
+              json.dump(json_data, f, indent=2)
+          " | tee pr-benchmark-output.txt
+
+      - name: Check performance thresholds
+        run: |
+          python -c "
+          import json
+          import sys
+
+          with open('pr-benchmarks.json') as f:
+              results = json.load(f)
+
+          max_overhead = max(r['overhead'] for r in results)
+          avg_overhead = sum(r['overhead'] for r in results) / len(results)
+
+          print(f'📊 Max overhead: {max_overhead:.2f}x')
+          print(f'📊 Avg overhead: {avg_overhead:.2f}x')
+
+          # Fail if overhead is too high
+          if max_overhead > 5.0:
+              print(f'❌ Max overhead {max_overhead:.2f}x exceeds limit of 5.0x')
+              sys.exit(1)
+
+          if avg_overhead > 3.0:
+              print(f'⚠️  Avg overhead {avg_overhead:.2f}x exceeds target of 3.0x')
+
+          print('✓ Performance within acceptable limits')
+          "
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: |
+            pr-benchmarks.json
+            pr-benchmark-output.txt
+          retention-days: 30
+
+  # ============================================================================
+  # CODE QUALITY
+  # ============================================================================
+  code-quality:
+    name: Code quality checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup dimtensor
+        uses: marcoloco23/dimtensor/.github/actions/setup-dimtensor@main
+        with:
+          python-version: '3.11'
+          install-extras: 'dev'
+
+      - name: Run ruff
+        run: |
+          ruff check src/ tests/
+
+      - name: Check formatting
+        run: |
+          ruff format --check src/ tests/
+
+  # ============================================================================
+  # INTEGRATION TESTS (Optional)
+  # ============================================================================
+  integration:
+    name: Integration tests
+    runs-on: ubuntu-latest
+    needs: [test, lint-dimensions]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup dimtensor
+        uses: marcoloco23/dimtensor/.github/actions/setup-dimtensor@main
+        with:
+          python-version: '3.11'
+          install-extras: 'dev,all'
+
+      - name: Run integration tests
+        run: |
+          # Example: test with real physics simulations
+          python -c "
+          from dimtensor import DimArray, units
+          import numpy as np
+
+          # Simple projectile motion
+          g = DimArray(9.81, units.m / units.s**2)
+          v0 = DimArray(50, units.m / units.s)
+          angle = 45  # degrees
+
+          theta = np.radians(angle)
+          t_flight = 2 * v0 * np.sin(theta) / g
+
+          print(f'Flight time: {t_flight.value:.2f} {t_flight.unit}')
+          assert str(t_flight.unit) == 's'
+
+          print('✓ Physics simulation passed')
+          "
+
+      - name: Test PyTorch integration
+        run: |
+          python -c "
+          import torch
+          from dimtensor.torch import DimTensor
+          from dimtensor import units
+
+          # Test gradient computation with units
+          x = DimTensor([1.0, 2.0, 3.0], units.m, requires_grad=True)
+          y = x ** 2
+
+          loss = y.sum()
+          loss.backward()
+
+          print(f'Gradients: {x.grad}')
+          print('✓ PyTorch integration passed')
+          "
+
+      - name: Test JAX integration
+        run: |
+          python -c "
+          import jax.numpy as jnp
+          from dimtensor.jax import DimArray
+          from dimtensor import units
+
+          # Test JAX operations
+          x = DimArray(jnp.array([1.0, 2.0, 3.0]), units.m)
+          y = DimArray(jnp.array([2.0, 3.0, 4.0]), units.s)
+
+          z = x * y
+          assert str(z.unit) == 'm·s'
+
+          print('✓ JAX integration passed')
+          "
+
+  # ============================================================================
+  # SUMMARY
+  # ============================================================================
+  status:
+    name: CI Status
+    runs-on: ubuntu-latest
+    needs: [lint-dimensions, test, type-check, code-quality]
+    if: always()
+
+    steps:
+      - name: Check CI status
+        run: |
+          if [ "${{ needs.lint-dimensions.result }}" != "success" ] || \
+             [ "${{ needs.test.result }}" != "success" ] || \
+             [ "${{ needs.type-check.result }}" != "success" ] || \
+             [ "${{ needs.code-quality.result }}" != "success" ]; then
+            echo "❌ CI checks failed"
+            exit 1
+          fi
+          echo "✓ All CI checks passed"
