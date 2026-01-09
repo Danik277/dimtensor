@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2026-01-09
+
+### Added
+- **SciPy Integration** (`from dimtensor.scipy import ...`)
+  - **Optimization wrappers** with unit preservation:
+    - `minimize(fun, x0, ...)` - dimension-aware optimization
+    - `curve_fit(f, xdata, ydata, p0)` - curve fitting with units
+    - `least_squares(fun, x0, bounds)` - least squares with dimensional bounds
+  - **Integration wrappers**:
+    - `solve_ivp(fun, t_span, y0)` - solve ODEs preserving units
+    - `quad(fun, a, b)` - numerical integration with unit-aware results
+  - **Interpolation wrappers**:
+    - `interp1d(x, y)` - 1D interpolation preserving units
+    - `DimUnivariateSpline(x, y)` - spline with unit tracking
+
+- **Scikit-learn Integration** (`from dimtensor.sklearn import ...`)
+  - `DimStandardScaler` - StandardScaler preserving units through inverse_transform
+  - `DimMinMaxScaler` - MinMaxScaler with unit-aware scaling
+  - `DimTransformerMixin` - Base mixin for dimension-aware transformers
+
+- **Polars Integration** (`from dimtensor.io.polars import ...`)
+  - `to_polars(arrays)` - Convert DimArrays to Polars DataFrame
+  - `from_polars(df, units_map)` - Convert Polars DataFrame to DimArrays
+  - `save_polars(arrays, path)` - Save to Parquet/CSV/JSON via Polars
+  - `load_polars(path, units_map)` - Load from file via Polars
+
+- 26 new tests (17 scipy, 9 sklearn + polars tests)
+
+### Changed
+- Total test count: 695 → 721 passed (63 skipped)
+- Source files: 55 → 62 (7 new modules)
+
 ## [3.0.0] - 2026-01-09
 
 ### Added
