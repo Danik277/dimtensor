@@ -8,128 +8,83 @@
 
 ---
 
-## Current Status (v0.9.0) - 2026-01-08
+## Current Status (v3.3.0) - 2026-01-09
 
 ### Completed Features
 
 | Version | Feature | Status | Notes |
 |---------|---------|--------|-------|
-| v0.1.x | Foundation | DONE | Basic DimArray, units, PyPI |
-| v0.2.x | Usability | DONE | Unit simplification, format strings, numpy ufuncs |
-| v0.3.x | NumPy Parity | DONE | Array functions, linear algebra, reshaping |
-| v0.4.x | Constants | DONE | CODATA 2022 physical constants |
-| v0.5.x | Uncertainty | DONE | Error propagation through calculations |
-| v0.6.x | PyTorch | DONE | DimTensor with autograd, GPU support |
-| v0.7.x | JAX | DONE | DimArray with pytree, JIT, vmap, grad |
-| v0.8.x | Benchmarks | DONE | Performance measurement module |
-| v0.9.x | Serialization | DONE | JSON, Pandas, HDF5 support |
-
-### Deferred Features (moved to v1.x)
-- Rust backend for performance (originally v0.8)
-- NetCDF support (originally v0.9)
-- Parquet support (originally v0.9)
-- xarray integration (originally v0.9)
+| v0.1-0.9 | Foundation | DONE | DimArray, units, PyTorch, JAX, serialization |
+| v1.0.x | Production Release | DONE | Code review, test coverage, documentation |
+| v1.1.0 | Serialization | DONE | NetCDF, Parquet, xarray |
+| v1.2.0 | Domain Extensions | DONE | Astronomy, chemistry, engineering units |
+| v1.3.0 | Visualization | DONE | Matplotlib, Plotly integration |
+| v1.4.0 | Validation | DONE | Constraints, conservation tracking |
+| v2.0.0 | Rust Backend | DONE | PyO3 bindings, ~58% overhead |
+| v2.1.0 | Dimensional Inference | DONE | Variable heuristics, equation patterns, linting |
+| v2.2.0 | Physics-Aware ML | DONE | DimLayers, losses, normalization, scalers |
+| v3.0.0 | Physics ML Platform | DONE | Model hub, equation database, dataset registry |
+| v3.1.0 | Ecosystem Integration | DONE | SciPy, scikit-learn, Polars |
+| v3.2.0 | SymPy Integration | DONE | Symbolic math bridge |
+| v3.3.0 | Advanced Features | DONE | Dataset loaders, unit inference, 67 equations |
 
 ### Current Metrics
-- **Tests**: 316 passing, 48 skipped
-- **Coverage**: 72%
-- **PyPI**: v0.9.0 deployed
+- **Source Files**: 73 Python files, ~18k lines
+- **Tests**: 795+ tests (with all optional deps)
+- **Coverage**: ~85%
+- **PyPI**: v3.3.0 deployed
+- **Modules**: core, torch, jax, io, scipy, sklearn, sympy, datasets, equations, inference, visualization, validation, hub
 
 ---
 
-## v1.0.0 - Production Release
+## v3.4.0 - Documentation & Polish
 
-**Theme**: Consolidation, quality, documentation
+**Theme**: Make dimtensor accessible to everyone
 
-**Status**: IN PROGRESS
-
-### v1.0.0 Checklist
-
-#### Code Quality (REQUIRED)
-- [ ] **Code review**: Review all v0.5-v0.9 code for quality issues
-  - [ ] Review `src/dimtensor/torch/dimtensor.py` (591 lines)
-  - [ ] Review `src/dimtensor/jax/dimarray.py` (506 lines)
-  - [ ] Review `src/dimtensor/io/*.py` (JSON, Pandas, HDF5)
-  - [ ] Review `src/dimtensor/benchmarks.py` (304 lines)
-- [ ] **Type safety**: Clean mypy output (0 errors)
-- [ ] **Test coverage**: Increase from 72% to 85%+
-- [ ] **Fix any bugs found during review**
-
-#### Documentation (REQUIRED)
-- [ ] **API documentation**: All public functions documented
-- [ ] **README update**: Reflect all current features
-- [ ] **Examples**: Working examples for PyTorch, JAX, serialization
-- [ ] **CHANGELOG**: Ensure all changes are documented
-
-#### Deployment (REQUIRED)
-- [ ] **Version bump**: Update to 1.0.0
-- [ ] **PyPI release**: Deploy stable v1.0.0
-- [ ] **Git tag**: Tag release
-
-#### Nice to Have (v1.0.1+)
+- [ ] Full MkDocs documentation site
+- [ ] Tutorial notebooks (Jupyter)
 - [ ] Migration guide from pint/astropy.units
-- [ ] Performance benchmarks documented
-- [ ] Security audit
+- [ ] API reference auto-generation
+- [ ] Example gallery (physics simulations)
+- [ ] Video tutorials
 
 ---
 
-## v1.x - Ecosystem & Extensions
+## v3.5.0 - Enhanced ML Architectures
 
-### v1.1.0 - Missing Serialization
-- [ ] NetCDF support
-- [ ] Parquet support
-- [ ] xarray integration
+**Theme**: State-of-the-art physics ML
 
-### v1.2.0 - Domain Extensions
-- [ ] Astronomy units (parsec, AU, solar mass)
-- [ ] Chemistry units (molar, molal, ppm, pH)
-- [ ] Engineering units (MPa, ksi, BTU)
-
-### v1.3.0 - Visualization
-- [ ] Matplotlib integration (auto-labeled axes)
-- [ ] Plotly integration
-- [ ] Unit conversion in plots
-
-### v1.4.0 - Validation & Constraints
-- [ ] Value constraints (positive, bounded)
-- [ ] Conservation laws tracking
-- [ ] Custom constraints
+- [ ] Graph neural networks for physics (GNNs)
+- [ ] Transformer architectures for time series
+- [ ] Physics-informed attention mechanisms
+- [ ] Distributed training support
+- [ ] Advanced physics priors/regularizers
+- [ ] Model checkpointing with units
 
 ---
 
-## v2.x - Performance & Intelligence
+## v3.6.0 - Performance & GPU
 
-### v2.0.0 - Rust Backend
 **Theme**: Production-ready speed
 
-- [ ] Rust core via PyO3
-- [ ] Lazy evaluation
-- [ ] Operator fusion
-- [ ] Memory optimization
-- [ ] Target: <10% overhead vs raw numpy
-
-### v2.1.0 - Dimensional Inference
-- [ ] Variable name heuristics
-- [ ] Equation pattern matching
-- [ ] IDE integration for unit hints
-- [ ] Linting for dimensional errors
-
-### v2.2.0 - Physics-Aware ML
-- [ ] Physics-aware layers
-- [ ] Dimensional loss functions
-- [ ] Unit-aware normalization
-- [ ] Automatic non-dimensionalization
+- [ ] CUDA kernel optimization for DimTensor
+- [ ] Memory-efficient operations
+- [ ] Lazy evaluation enhancements
+- [ ] Profiling tools for unit overhead
+- [ ] Benchmark suite against competitors
 
 ---
 
-## v3.x - Platform
+## v4.0.0 - Platform Maturity
 
-### v3.0.0 - Physics ML Toolkit
-- [ ] Model hub (pre-trained physics models)
-- [ ] Equation database
-- [ ] Dataset registry with units
-- [ ] CLI tools (`dimtensor check`, `dimtensor convert`)
-- [ ] Symbolic computing bridge
+**Theme**: Ecosystem and community
+
+- [ ] VS Code extension (dimensional linting)
+- [ ] Plugin system for custom units
+- [ ] Community unit registry
+- [ ] Web dashboard for model hub
+- [ ] CI/CD templates for unit-aware projects
+- [ ] Integration with MLOps tools (MLflow, W&B)
 
 ---
 
@@ -137,12 +92,12 @@
 
 | Milestone | Metric | Target | Current |
 |-----------|--------|--------|---------|
-| v1.0 | Test coverage | 85%+ | 72% |
-| v1.0 | mypy errors | 0 | TBD |
-| v1.0 | GitHub stars | 100 | - |
-| v1.5 | PyPI downloads/month | 10,000 | - |
-| v2.0 | Performance overhead | <10% | ~2-5x |
-| v2.0 | Contributors | 10+ | 1 |
+| v3.3.0 | Test coverage | 85%+ | ~85% |
+| v3.3.0 | mypy errors | 0 | 0 |
+| v4.0.0 | GitHub stars | 500 | - |
+| v4.0.0 | PyPI downloads/month | 50,000 | - |
+| v4.0.0 | Performance overhead | <20% | ~58% |
+| v4.0.0 | Contributors | 20+ | 1 |
 
 ---
 
@@ -157,29 +112,25 @@
 
 ---
 
-## File Structure
+## Architecture
 
 ```
 src/dimtensor/
 ├── core/              # DimArray, units, dimensions
-│   ├── dimarray.py
-│   ├── dimensions.py
-│   └── units.py
 ├── constants/         # Physical constants (CODATA 2022)
-│   ├── universal.py
-│   ├── electromagnetic.py
-│   ├── atomic.py
-│   └── physico_chemical.py
-├── torch/             # PyTorch integration
-│   └── dimtensor.py
+├── torch/             # PyTorch integration (DimTensor, layers, losses)
 ├── jax/               # JAX integration
-│   └── dimarray.py
-├── io/                # Serialization
-│   ├── json.py
-│   ├── pandas.py
-│   └── hdf5.py
-├── benchmarks.py      # Performance measurement
-├── functions.py       # Array functions
-├── errors.py          # Custom exceptions
-└── config.py          # Display configuration
+├── io/                # Serialization (JSON, HDF5, NetCDF, Parquet, Polars)
+├── scipy/             # SciPy wrappers
+├── sklearn/           # Scikit-learn transformers
+├── sympy/             # SymPy integration
+├── datasets/          # Dataset registry and loaders
+├── equations/         # Physics equation database
+├── inference/         # Unit inference and heuristics
+├── hub/               # Model registry
+├── visualization/     # Matplotlib, Plotly
+├── validation/        # Constraints, conservation
+├── domains/           # Astronomy, chemistry, engineering units
+├── cli/               # Linting CLI
+└── benchmarks.py      # Performance measurement
 ```

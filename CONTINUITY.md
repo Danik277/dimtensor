@@ -395,6 +395,102 @@ Note: Core inference (tasks 78-81) shipped in v2.0.0
 
 ---
 
+### v3.4.0 - Documentation & Polish
+
+**Theme**: Make dimtensor accessible to everyone
+
+#### Phase 1: Update Existing Docs
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 139 | Update docs/index.md with v3.3.0 features | PENDING | Add ML, inference, datasets sections |
+| 140 | Update docs/getting-started.md | PENDING | Add framework install options |
+| 141 | Update docs/guide/examples.md | PENDING | Physics ML, uncertainty, constraints |
+| 142 | Update docs/api/*.md | PENDING | Add new modules to API reference |
+
+#### Phase 2: New Documentation Sections
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 143 | 🗺️ Create docs/guide/pytorch.md | PENDING | DimTensor, layers, losses, training |
+| 144 | 🗺️ Create docs/guide/jax.md | PENDING | JAX DimArray, JIT, vmap, grad |
+| 145 | 🗺️ Create docs/guide/physics-ml.md | PENDING | Complete physics ML tutorial |
+| 146 | 🗺️ Create docs/guide/visualization.md | PENDING | Matplotlib, Plotly examples |
+| 147 | 🗺️ Create docs/guide/validation.md | PENDING | Constraints, conservation tracking |
+| 148 | 🗺️ Create docs/guide/inference.md | PENDING | Unit inference, linting CLI |
+| 149 | 🗺️ Create docs/guide/datasets.md | PENDING | Dataset registry, loaders |
+| 150 | 🗺️ Create docs/guide/equations.md | PENDING | Equation database, lookup |
+
+#### Phase 3: Tutorial Notebooks
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 151 | 🗺️ Create examples/01_basics.ipynb | PENDING | DimArray fundamentals |
+| 152 | 🗺️ Create examples/02_physics_simulation.ipynb | PENDING | Pendulum, projectile motion |
+| 153 | 🗺️ Create examples/03_pytorch_training.ipynb | PENDING | Train a PINN with DimTensor |
+| 154 | 🗺️ Create examples/04_data_analysis.ipynb | PENDING | Load real physics data, visualize |
+| 155 | 🗺️ Create examples/05_unit_inference.ipynb | PENDING | Automatic unit detection |
+
+#### Phase 4: Migration & Polish
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 156 | Update docs/troubleshooting/migration.md | PENDING | Complete pint/astropy migration |
+| 157 | Add docstrings to all new modules | PENDING | v2.0+ modules need docstrings |
+| 158 | Generate API docs with mkdocstrings | PENDING | Auto-generate from docstrings |
+| 159 | Build and test docs site locally | PENDING | mkdocs serve |
+| 160 | Deploy docs to GitHub Pages | PENDING | mkdocs gh-deploy |
+| 161 | Deploy v3.4.0 to PyPI | PENDING | |
+
+---
+
+### v3.5.0 - Enhanced ML Architectures
+
+**Theme**: State-of-the-art physics ML
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 162 | 🗺️ Research graph neural networks for physics | PENDING | |
+| 163 | 🗺️ Implement DimGraphConv layer | PENDING | GNN with units |
+| 164 | 🗺️ Implement DimTransformer | PENDING | Attention with units |
+| 165 | 🗺️ Create physics priors module | PENDING | Energy conservation, symmetry |
+| 166 | Implement DimCheckpoint | PENDING | Save/load models with units |
+| 167 | Add distributed training support | PENDING | DDP with unit consistency |
+| 168 | Add tests for new architectures | PENDING | |
+| 169 | Deploy v3.5.0 to PyPI | PENDING | |
+
+---
+
+### v3.6.0 - Performance & GPU
+
+**Theme**: Production-ready speed
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 170 | 🗺️ Profile CUDA overhead for DimTensor | PENDING | |
+| 171 | 🗺️ Implement CUDA kernels for common ops | PENDING | Fused add/mul with unit check |
+| 172 | Optimize Rust backend | PENDING | Target <20% overhead |
+| 173 | Create benchmark suite | PENDING | Compare vs pint, astropy, unyt |
+| 174 | Add memory profiling tools | PENDING | Track unit metadata overhead |
+| 175 | Deploy v3.6.0 to PyPI | PENDING | |
+
+---
+
+### v4.0.0 - Platform Maturity
+
+**Theme**: Ecosystem and community
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 176 | 🗺️ Create VS Code extension skeleton | PENDING | |
+| 177 | Implement dimensional linting in extension | PENDING | Red squiggles for unit errors |
+| 178 | 🗺️ Design plugin system for custom units | PENDING | |
+| 179 | Implement plugin registry | PENDING | |
+| 180 | Create community unit submission flow | PENDING | |
+| 181 | 🗺️ Build web dashboard for model hub | PENDING | Browse models, datasets |
+| 182 | Add MLflow integration | PENDING | Log units with experiments |
+| 183 | Add Weights & Biases integration | PENDING | |
+| 184 | Create CI/CD templates | PENDING | GitHub Actions for unit tests |
+| 185 | Deploy v4.0.0 to PyPI | PENDING | |
+
+---
+
 ## CODE REVIEW TEMPLATE
 
 When reviewing each file, check and document:
