@@ -5,6 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2026-01-09
+
+### Added
+- **Physics-Aware ML Layers** (`from dimtensor.torch import DimLinear, DimConv2d, ...`)
+  - `DimLayer` - Base class for dimension-aware neural network layers
+  - `DimLinear` - Linear layer with dimension tracking
+  - `DimConv1d`, `DimConv2d` - Convolution layers with dimension tracking
+  - `DimSequential` - Container with dimension chain validation
+
+- **Dimensional Loss Functions**
+  - `DimMSELoss` - MSE loss with dimensional checking (output has dim^2)
+  - `DimL1Loss` - L1 loss preserving input dimension
+  - `DimHuberLoss` - Huber loss with dimensional checking
+  - `PhysicsLoss` - Conservation law enforcement loss
+  - `CompositeLoss` - Combine data and physics loss terms
+
+- **Dimension-Aware Normalization**
+  - `DimBatchNorm1d`, `DimBatchNorm2d` - Batch normalization preserving dimensions
+  - `DimLayerNorm` - Layer normalization preserving dimensions
+  - `DimInstanceNorm1d`, `DimInstanceNorm2d` - Instance normalization
+
+- **Non-Dimensionalization Scalers**
+  - `DimScaler` - Scale physical quantities to dimensionless for training
+  - `MultiScaler` - Manage scaling for multiple physical quantities
+  - Three scaling methods: 'characteristic', 'standard', 'minmax'
+  - Automatic inverse transform back to physical units
+
+- 52 new tests for physics ML features
+
+### Changed
+- Total test count: 574 → 626 passed (62 skipped)
+- Source files: 48 (4 new: layers.py, losses.py, normalization.py, scaler.py)
+
 ## [2.1.0] - 2026-01-09
 
 ### Added

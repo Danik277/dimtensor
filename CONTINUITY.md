@@ -62,8 +62,8 @@ IMPORTANT: DO NOT STOP TO ASK FOR APPROVAL.
 ## CURRENT STATE
 
 **Date**: 2026-01-09
-**Version**: 2.1.0
-**Status**: v2.1.0 deployed to PyPI
+**Version**: 2.2.0
+**Status**: v2.2.0 deployed to PyPI
 
 ### What Just Happened
 - v2.0.0 Rust Backend NOW WORKING:
@@ -262,20 +262,20 @@ Note: Core inference (tasks 78-81) shipped in v2.0.0
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 88 | 🗺️ Research physics-informed neural networks | PENDING | PLAN REQUIRED |
-| 89 | 🗺️ Design DimLayer base class | PENDING | PLAN REQUIRED: PyTorch nn.Module with units |
-| 90 | Implement DimLinear layer | PENDING | Linear layer that tracks dimensions |
-| 91 | Implement DimConv layers | PENDING | Conv1d, Conv2d with dimension tracking |
-| 92 | 🗺️ Design dimensional loss functions | PENDING | PLAN REQUIRED |
-| 93 | Implement MSELoss with unit checking | PENDING | |
-| 94 | Implement PhysicsLoss (conservation laws) | PENDING | |
-| 95 | 🗺️ Design unit-aware normalization | PENDING | PLAN REQUIRED |
-| 96 | Implement DimBatchNorm | PENDING | |
-| 97 | Implement DimLayerNorm | PENDING | |
-| 98 | 🗺️ Design automatic non-dimensionalization | PENDING | PLAN REQUIRED |
-| 99 | Implement Scaler for physics ML | PENDING | Scale to dimensionless for training |
-| 100 | Add tests for physics ML | PENDING | |
-| 101 | Deploy v2.2.0 to PyPI | PENDING | |
+| 88 | 🗺️ Research physics-informed neural networks | DONE | Plan: .plans/2026-01-09_physics-aware-ml.md |
+| 89 | 🗺️ Design DimLayer base class | DONE | DimLayer, DimLinear, DimConv in layers.py |
+| 90 | Implement DimLinear layer | DONE | Part of task 89 |
+| 91 | Implement DimConv layers | DONE | DimConv1d, DimConv2d, DimSequential |
+| 92 | 🗺️ Design dimensional loss functions | DONE | losses.py |
+| 93 | Implement MSELoss with unit checking | DONE | DimMSELoss, DimL1Loss, DimHuberLoss |
+| 94 | Implement PhysicsLoss (conservation laws) | DONE | PhysicsLoss, CompositeLoss |
+| 95 | 🗺️ Design unit-aware normalization | DONE | normalization.py |
+| 96 | Implement DimBatchNorm | DONE | DimBatchNorm1d, DimBatchNorm2d |
+| 97 | Implement DimLayerNorm | DONE | DimLayerNorm, DimInstanceNorm |
+| 98 | 🗺️ Design automatic non-dimensionalization | DONE | scaler.py |
+| 99 | Implement Scaler for physics ML | DONE | DimScaler, MultiScaler |
+| 100 | Add tests for physics ML | DONE | 52 tests in test_dim_*.py |
+| 101 | Deploy v2.2.0 to PyPI | DONE | https://pypi.org/project/dimtensor/2.2.0/ |
 
 ---
 
@@ -553,6 +553,26 @@ Format: Use sequential numbers. Add new entries at the bottom.
 86. Updated README with linting CLI section
 87. Task #87: Deployed v2.1.0 to PyPI: https://pypi.org/project/dimtensor/2.1.0/
 88. v2.1.0 COMPLETE - Dimensional linting CLI released
+89. Starting v2.2.0 - Physics-Aware ML
+90. Task #88: Researched physics-informed neural networks (PINNs)
+91. Created plan for physics-aware ML: .plans/2026-01-09_physics-aware-ml.md
+92. Task #89-91: Implemented DimLayer base class and layers:
+    - DimLinear, DimConv1d, DimConv2d, DimSequential
+    - Dimension validation on forward pass
+93. Task #92-94: Implemented dimensional loss functions:
+    - DimMSELoss (returns dim^2), DimL1Loss, DimHuberLoss
+    - PhysicsLoss for conservation law enforcement
+    - CompositeLoss for combining data and physics terms
+94. Task #95-97: Implemented dimension-aware normalization:
+    - DimBatchNorm1d, DimBatchNorm2d, DimLayerNorm
+    - DimInstanceNorm1d, DimInstanceNorm2d
+95. Task #98-99: Implemented non-dimensionalization:
+    - DimScaler with characteristic/standard/minmax methods
+    - MultiScaler for managing multiple quantities
+96. Task #100: Added 52 tests for physics ML features
+97. All 626 tests pass, mypy clean with 48 source files
+98. Task #101: Deployed v2.2.0 to PyPI: https://pypi.org/project/dimtensor/2.2.0/
+99. v2.2.0 COMPLETE - Physics-Aware ML layers released
 
 ---
 
