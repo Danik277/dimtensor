@@ -4,6 +4,17 @@ Instructions for AI coding agents working on this repository.
 
 ---
 
+## Quick Start: Orchestrator Mode
+
+For long autonomous sessions, use the **Orchestrator** pattern:
+
+1. Run: `claude --dangerously-skip-permissions`
+2. Paste prompt from: `.claude/ORCHESTRATOR_PROMPT.md`
+
+The orchestrator spawns parallel sub-agents for faster work.
+
+---
+
 ## FIRST: Read CONTINUITY.md
 
 **Before doing anything else**, read `CONTINUITY.md` in the project root.
