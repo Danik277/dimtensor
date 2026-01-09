@@ -481,7 +481,7 @@ Note: Core inference (tasks 78-81) shipped in v2.0.0
 | 172 | Optimize Rust backend | DEFERRED | v3.7.0 - Depends on benchmark results |
 | 173 | Create benchmark suite | DONE | benchmarks/ folder, ASV + pytest-benchmark |
 | 174 | Add memory profiling tools | DONE | profiling.py, memory_stats, MemoryProfiler |
-| 175 | Deploy v3.6.0 to PyPI | PENDING | Ready for local agent |
+| 175 | Deploy v3.6.0 to PyPI | PENDING | Ready for local deploy (web env blocked) |
 
 ---
 
@@ -1091,6 +1091,9 @@ Format: Use sequential numbers. Add new entries at the bottom.
 153. CHANGELOG.md updated with v3.6.0 release notes
 154. CUDA kernels (#171) and Rust optimization (#172) DEFERRED to v3.7.0
 155. v3.6.0 READY - Awaiting commit, push, PR merge and PyPI deployment
+156. PR merged, pulled main branch
+157. Fixed pyproject.toml metadata version (2.3) for twine compatibility
+158. PyPI deploy blocked by web environment proxy - ready for local deploy
 
 ---
 

@@ -110,9 +110,11 @@ dimtensor = "dimtensor.__main__:main"
 include = [
     "/src",
 ]
+core-metadata-version = "2.3"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/dimtensor"]
+core-metadata-version = "2.3"
 
 [tool.ruff]
 line-length = 88
