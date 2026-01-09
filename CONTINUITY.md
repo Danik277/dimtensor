@@ -245,8 +245,8 @@ IMPORTANT: DO NOT STOP TO ASK FOR APPROVAL.
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 78 | 🗺️ Design inference system architecture | PENDING | PLAN REQUIRED |
-| 79 | 🗺️ Implement variable name heuristics | PENDING | "velocity" → L/T, "force" → MLT⁻² |
+| 78 | 🗺️ Design inference system architecture | DONE | Plan: .plans/2026-01-09_dimensional-inference.md |
+| 79 | 🗺️ Implement variable name heuristics | DONE | inference/heuristics.py, 27 tests |
 | 80 | Build equation pattern database | PENDING | Common physics equations |
 | 81 | Implement equation pattern matching | PENDING | Recognize F=ma, E=mc², etc. |
 | 82 | 🗺️ Create IDE plugin architecture | PENDING | PLAN REQUIRED: VS Code, PyCharm |
@@ -513,6 +513,14 @@ Format: Use sequential numbers. Add new entries at the bottom.
     - Code ready for build when Rust is installed
     - Run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
     - Then: pip install maturin && cd rust && maturin develop
+69. Starting v2.1.0 - Dimensional Inference
+70. Task #78: Designed inference system architecture
+71. Task #79: Implemented variable name heuristics:
+    - 50+ physics variable patterns (velocity, force, energy, etc.)
+    - Prefix handling (initial_, final_, max_, etc.)
+    - Suffix handling (_m, _kg, _m_per_s, etc.)
+    - Component handling (_x, _y, _z)
+    - 27 new tests (525 total pass)
 
 ---
 
