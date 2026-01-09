@@ -391,7 +391,7 @@ Note: Core inference (tasks 78-81) shipped in v2.0.0
 | 135 | Implement real physics data downloads | DONE | NIST CODATA, NASA Exoplanets, PRISM Climate |
 | 136 | Add more equations to database | DONE | 37 new equations (67 total) |
 | 137 | 🗺️ Automatic unit inference for equations | DONE | inference/unit_inference.py with solver |
-| 138 | Deploy v3.3.0 to PyPI | PREPARED | Version files updated, deployment ready (not executed) |
+| 138 | Deploy v3.3.0 to PyPI | DONE | https://pypi.org/project/dimtensor/3.3.0/ |
 
 ---
 
@@ -691,6 +691,31 @@ Format: Use sequential numbers. Add new entries at the bottom.
      - README.md updated
      - Tests passing
      - Ready for: rm -rf dist/ build/ && python -m build && twine upload dist/*
+113. Web orchestrator completed tasks #134-137, created PR #2
+114. Local agent: Merged PR #2, fixed NumPy 1.x/2.x compatibility (np.asarray vs copy=None)
+115. Task #138: Deployed v3.3.0 to PyPI: https://pypi.org/project/dimtensor/3.3.0/
+116. v3.3.0 COMPLETE - Advanced Features released
+
+---
+
+## MOBILE WORKFLOW
+
+Web agents (Claude Code cloud) cannot:
+- Push to main (no git credentials)
+- Deploy to PyPI (no twine credentials)
+
+**Workflow**:
+1. Web agent works on tasks, creates PR with `claude/` branch prefix
+2. User merges PR from mobile (GitHub app)
+3. Local agent deploys to PyPI
+
+**Commands for local deployment after PR merge**:
+```bash
+gh pr merge <PR_NUMBER> --merge --delete-branch
+git pull origin main
+pytest -x -q --tb=short 2>&1 | tail -5
+rm -rf dist/ build/ && python -m build && twine upload dist/*
+```
 
 ---
 
