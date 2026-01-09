@@ -15,6 +15,7 @@ def show_help() -> int:
     print("  equations  Browse physics equations")
     print("  datasets   List available datasets")
     print("  constants  List physical constants")
+    print("  plugins    Manage unit plugins")
     print("  info       Show information about dimtensor")
     print()
     print("Run 'python -m dimtensor <command> --help' for more info.")
@@ -201,6 +202,84 @@ def cmd_constants() -> int:
     return 0
 
 
+def cmd_plugins() -> int:
+    """Manage plugins."""
+    import argparse
+
+    from dimtensor import plugins
+
+    parser = argparse.ArgumentParser(
+        prog="dimtensor plugins",
+        description="Manage dimtensor unit plugins",
+    )
+    subparsers = parser.add_subparsers(dest="subcommand", help="Plugin subcommands")
+
+    # List subcommand
+    list_parser = subparsers.add_parser("list", help="List available plugins")
+    list_parser.add_argument("--verbose", "-v", action="store_true", help="Show details")
+
+    # Info subcommand
+    info_parser = subparsers.add_parser("info", help="Show plugin information")
+    info_parser.add_argument("name", help="Plugin name")
+
+    args = parser.parse_args()
+
+    if not args.subcommand:
+        parser.print_help()
+        return 0
+
+    if args.subcommand == "list":
+        try:
+            plugin_names = plugins.list_plugins()
+        except Exception as e:
+            print(f"Error discovering plugins: {e}")
+            return 1
+
+        if not plugin_names:
+            print("No plugins found.")
+            print()
+            print("To create a plugin, see the documentation:")
+            print("  https://dimtensor.readthedocs.io/en/latest/guide/plugins.html")
+            return 0
+
+        print(f"Found {len(plugin_names)} plugin(s):")
+        for name in plugin_names:
+            if args.verbose:
+                try:
+                    plugin = plugins.load_plugin(name)
+                    print(f"\n{name}:")
+                    print(f"  Version: {plugin.version}")
+                    print(f"  Author: {plugin.author}")
+                    print(f"  Description: {plugin.description}")
+                    print(f"  Units: {', '.join(plugin.units.keys())}")
+                except Exception as e:
+                    print(f"\n{name}: (error loading - {e})")
+            else:
+                print(f"  {name}")
+        return 0
+
+    elif args.subcommand == "info":
+        try:
+            plugin = plugins.load_plugin(args.name)
+        except ValueError as e:
+            print(f"Error: {e}")
+            return 1
+        except Exception as e:
+            print(f"Error loading plugin: {e}")
+            return 1
+
+        print(f"Plugin: {plugin.name}")
+        print(f"Version: {plugin.version}")
+        print(f"Author: {plugin.author}")
+        print(f"Description: {plugin.description}")
+        print(f"\nUnits ({len(plugin.units)}):")
+        for unit_name, unit in plugin.units.items():
+            print(f"  {unit_name}: {unit.symbol} ({unit.dimension})")
+        return 0
+
+    return 0
+
+
 def cmd_info() -> int:
     """Show dimtensor info."""
     from dimtensor import __version__
@@ -217,6 +296,7 @@ def cmd_info() -> int:
     print("  equations: Physics equation database")
     print("  datasets: Physics dataset registry")
     print("  hub: Model registry")
+    print("  plugins: Unit plugin system")
     return 0
 
 
@@ -243,6 +323,9 @@ def main() -> int:
 
     elif command == "constants":
         return cmd_constants()
+
+    elif command == "plugins":
+        return cmd_plugins()
 
     elif command == "info":
         return cmd_info()
