@@ -26,10 +26,12 @@ AS YOU WORK:
 BEFORE GIT COMMIT:
 - Update this file FIRST, commit together with code
 
-IMPORTANT: DO NOT STOP TO ASK FOR APPROVAL.
+IMPORTANT: DO NOT STOP. EVER. KEEP WORKING.
 - Deploy is just another task - do it and move on
-- After finishing a version, start the next one immediately
-- Only stop if: tests fail, you're blocked, or queue is empty
+- After finishing a version, START THE NEXT VERSION IMMEDIATELY
+- Do NOT summarize and wait - just continue to the next task
+- Only stop if: tests fail, you're genuinely blocked, or ALL tasks are DONE
+- If you find yourself writing "Next in queue..." - STOP AND DO THAT TASK INSTEAD
 ```
 
 ### PLANNING RULES
