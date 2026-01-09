@@ -5,6 +5,49 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2026-01-09
+
+### Added
+- **Model Hub** (`from dimtensor.hub import ...`)
+  - `ModelInfo` - Metadata for physics models with dimensional info
+  - `ModelCard` - Full model documentation with training info
+  - `register_model` - Decorator/function to register models
+  - `load_model`, `list_models`, `get_model_info` - Model discovery
+  - `save_model_card`, `load_model_card` - Card serialization
+
+- **Physics Equation Database** (`from dimtensor.equations import ...`)
+  - `Equation` - Equation dataclass with dimensional metadata
+  - 30+ built-in equations across 6 domains:
+    - Mechanics: Newton's laws, kinetic/potential energy, momentum
+    - Thermodynamics: Ideal gas law, heat capacity, Stefan-Boltzmann
+    - Electromagnetism: Ohm's law, Coulomb's law, Lorentz force
+    - Fluid dynamics: Bernoulli, Navier-Stokes, Reynolds number
+    - Relativity: Mass-energy equivalence, Lorentz factor
+    - Quantum: Planck-Einstein, de Broglie, Heisenberg uncertainty
+  - `get_equations`, `search_equations`, `register_equation` - Database API
+
+- **Dataset Registry** (`from dimtensor.datasets import ...`)
+  - `DatasetInfo` - Metadata with feature/target dimensions
+  - 10 built-in physics datasets:
+    - pendulum, projectile, spring_mass (mechanics)
+    - heat_diffusion, ideal_gas (thermodynamics)
+    - burgers, navier_stokes_2d (fluid dynamics)
+    - lorenz, three_body, wave_1d
+  - `list_datasets`, `load_dataset`, `register_dataset` - Dataset API
+
+- **Enhanced CLI** (`python -m dimtensor <command>`)
+  - `convert` - Unit conversion (e.g., `dimtensor convert 1 km m`)
+  - `equations` - Browse equation database with filtering
+  - `datasets` - List available physics datasets
+  - `constants` - Display physical constants
+  - `info` - Enhanced module information
+
+- 69 new tests (25 equations, 22 hub, 22 datasets)
+
+### Changed
+- Total test count: 626 → 695 passed (62 skipped)
+- Source files: 48 → 55 (7 new modules)
+
 ## [2.2.0] - 2026-01-09
 
 ### Added
