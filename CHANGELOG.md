@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-01-09
+
+### Added
+- **Optional Rust backend** for accelerated array operations
+  - Dimension-checked array operations (add, sub, mul, div) in Rust
+  - PyO3 bindings with rust-numpy for zero-copy array access
+  - Automatic fallback to pure Python when Rust not available
+  - Check availability: `from dimtensor._rust import HAS_RUST_BACKEND`
+  - Build from source: `cd rust && maturin build --release`
+
+- **Dimensional inference module** (`from dimtensor.inference import ...`)
+  - Variable name heuristics: `infer_dimension("velocity")` returns L/T
+  - 50+ physics variable patterns (velocity, force, energy, etc.)
+  - Prefix handling: initial_, final_, max_, min_, delta_, etc.
+  - Suffix handling: _m, _kg, _m_per_s, etc.
+  - Unit suffix patterns: _meter, _newton, _joule, etc.
+
+- **Equation pattern database** for dimensional analysis
+  - 30+ physics equations (F=ma, E=mc², PV=nRT, Ohm's law, etc.)
+  - 8 physics domains: mechanics, electromagnetics, thermodynamics, etc.
+  - Query functions: `get_equations_by_domain()`, `find_equations_with_variable()`
+  - Dimension suggestions: `suggest_dimension_from_equations("F")`
+
+- 67 new tests (19 Rust backend, 48 inference)
+
+### Changed
+- **Major version bump** for Rust backend architecture change
+- Total test count: 481 → 548 passed (62 skipped)
+- Module structure: Added `_rust.py`, `inference/` package
+
 ## [1.4.0] - 2026-01-09
 
 ### Added

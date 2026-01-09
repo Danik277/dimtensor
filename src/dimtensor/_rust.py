@@ -45,23 +45,58 @@ try:
 except ImportError:
     HAS_RUST_BACKEND = False
 
-    # Python fallback implementations
 
-    def dimensions_compatible(dim_a: Dimension, dim_b: Dimension) -> bool:
-        """Check if two dimensions are compatible (Python fallback)."""
-        return dim_a == dim_b
+# Dimension utility functions (always available, use Python implementation)
+def dimensions_compatible(dim_a: Dimension, dim_b: Dimension) -> bool:
+    """Check if two dimensions are compatible for addition/subtraction.
 
-    def multiply_dimensions(dim_a: Dimension, dim_b: Dimension) -> Dimension:
-        """Multiply two dimensions (Python fallback)."""
-        return dim_a * dim_b
+    Args:
+        dim_a: First dimension
+        dim_b: Second dimension
 
-    def divide_dimensions(dim_a: Dimension, dim_b: Dimension) -> Dimension:
-        """Divide two dimensions (Python fallback)."""
-        return dim_a / dim_b
+    Returns:
+        True if dimensions are equal
+    """
+    return dim_a == dim_b
 
-    def power_dimension(dim: Dimension, power: int) -> Dimension:
-        """Raise dimension to a power (Python fallback)."""
-        return dim ** power
+
+def multiply_dimensions(dim_a: Dimension, dim_b: Dimension) -> Dimension:
+    """Multiply two dimensions.
+
+    Args:
+        dim_a: First dimension
+        dim_b: Second dimension
+
+    Returns:
+        Product of dimensions
+    """
+    return dim_a * dim_b
+
+
+def divide_dimensions(dim_a: Dimension, dim_b: Dimension) -> Dimension:
+    """Divide two dimensions.
+
+    Args:
+        dim_a: Numerator dimension
+        dim_b: Denominator dimension
+
+    Returns:
+        Quotient of dimensions
+    """
+    return dim_a / dim_b
+
+
+def power_dimension(dim: Dimension, power: int) -> Dimension:
+    """Raise dimension to a power.
+
+    Args:
+        dim: Dimension to raise
+        power: Exponent
+
+    Returns:
+        Dimension raised to power
+    """
+    return dim ** power
 
 
 def add_arrays(

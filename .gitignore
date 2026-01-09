@@ -73,3 +73,8 @@ site/
 # OS
 .DS_Store
 Thumbs.db
+
+# Rust
+rust/target/
+*.so
+*.dylib

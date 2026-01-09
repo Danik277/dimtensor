@@ -54,6 +54,8 @@ velocity + acceleration  # DimensionError: cannot add m/s to m/s^2
 - **I/O Support** - JSON, HDF5, Parquet, NetCDF, pandas, xarray
 - **Visualization** - Matplotlib and Plotly with automatic unit labels
 - **Domain Units** - Astronomy, chemistry, and engineering units
+- **Dimensional Inference** - Infer dimensions from variable names and equations
+- **Optional Rust Backend** - Accelerated operations when built from source
 
 ## Installation
 
@@ -66,6 +68,28 @@ For framework-specific support:
 pip install dimtensor[torch]  # PyTorch integration
 pip install dimtensor[jax]    # JAX integration
 pip install dimtensor[all]    # All optional dependencies
+```
+
+### Optional: Rust Backend (v2.0+)
+
+For improved performance, build the optional Rust backend:
+
+```bash
+# Install Rust (if not already installed)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+pip install maturin
+
+# Build and install the Rust extension
+cd /path/to/dimtensor/rust
+maturin build --release
+pip install target/wheels/dimtensor_core-*.whl
+```
+
+The library automatically uses the Rust backend when available, with a pure Python fallback otherwise. Check availability:
+
+```python
+from dimtensor._rust import HAS_RUST_BACKEND
+print(f"Rust backend: {HAS_RUST_BACKEND}")
 ```
 
 ## Quick Start
@@ -185,6 +209,29 @@ concentration = DimArray([0.1], molar)  # 0.1 M
 # Engineering
 stress = DimArray([250], MPa)
 power = DimArray([100], hp)
+```
+
+### Dimensional Inference (v2.0+)
+
+```python
+from dimtensor.inference import infer_dimension, get_equations_by_domain
+
+# Infer dimension from variable name
+result = infer_dimension("velocity")
+print(result.dimension)    # L·T⁻¹ (length/time)
+print(result.confidence)   # 0.9
+
+# Works with prefixes and suffixes
+result = infer_dimension("initial_velocity_x")
+print(result.dimension)    # L·T⁻¹
+
+# Query physics equations
+mechanics = get_equations_by_domain("mechanics")
+for eq in mechanics[:3]:
+    print(f"{eq.name}: {eq.formula}")
+# Newton's Second Law: F = ma
+# Kinetic Energy: KE = ½mv²
+# Gravitational Force: F = Gm₁m₂/r²
 ```
 
 ## Useful Links
