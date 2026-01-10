@@ -479,7 +479,7 @@ Note: Core inference (tasks 78-81) shipped in v2.0.0
 | 172 | Optimize Rust backend | DEFERRED | v3.7.0 - Depends on benchmark results |
 | 173 | Create benchmark suite | DONE | benchmarks/ folder, ASV + pytest-benchmark |
 | 174 | Add memory profiling tools | DONE | profiling.py, memory_stats, MemoryProfiler |
-| 175 | Deploy v3.6.0 to PyPI | PENDING | Ready for local deploy (web env blocked) |
+| 175 | Deploy v3.6.0 to PyPI | DONE | Included in v4.1.0 |
 
 ---
 
@@ -498,7 +498,7 @@ Note: Core inference (tasks 78-81) shipped in v2.0.0
 | 182 | Add MLflow integration | DONE | integrations/mlflow.py |
 | 183 | Add Weights & Biases integration | DONE | integrations/wandb.py |
 | 184 | Create CI/CD templates | DONE | .github/workflows/, docs/guide/ci-cd.md |
-| 185 | Deploy v4.0.0 to PyPI | PENDING | Ready for local deploy |
+| 185 | Deploy v4.0.0 to PyPI | DONE | Included in v4.1.0 |
 
 ---
 
@@ -520,7 +520,7 @@ Note: Core inference (tasks 78-81) shipped in v2.0.0
 | 195 | Add natural units (c=ℏ=1) | DONE | GeV, to_natural(), from_natural() |
 | 196 | Add Planck units | DONE | planck_length, planck_mass, planck_energy |
 | 197 | Add tests for all new units | DONE | 150 new tests (248 domain tests total) |
-| 198 | Deploy v4.1.0 to PyPI | PENDING | Ready for local deploy |
+| 198 | Deploy v4.1.0 to PyPI | DONE | https://pypi.org/project/dimtensor/4.1.0/ |
 
 ---
 
