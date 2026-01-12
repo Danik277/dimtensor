@@ -5,6 +5,72 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.4.0] - 2026-01-12
+
+### Added
+- **Comprehensive Physics Equation Database** - 179 new equations across 9 domains:
+
+  - **Quantum Field Theory** (22 equations):
+    - Field equations: Dirac, Klein-Gordon
+    - Lagrangians: Scalar, Dirac, QED, QCD
+    - Propagators: Scalar, Fermion, Photon (Feynman)
+    - Cross-sections: Compton, Bhabha, Møller, Pair production, Breit-Wigner
+    - Decay rates: Muon decay, Fermi's Golden Rule
+    - Coupling constants: α, running QED/QCD
+
+  - **General Relativity** (25 equations):
+    - Schwarzschild: Metric components, time dilation, redshift, Kretschmann scalar
+    - Cosmology: Friedmann equations, critical density, scale factors
+    - Kerr metric: Angular momentum, horizons, ergosphere
+    - Gravitational waves: Strain, chirp mass, energy flux
+
+  - **Statistical Mechanics** (23 equations):
+    - Distributions: Boltzmann, Fermi-Dirac, Bose-Einstein, Maxwell-Boltzmann
+    - Partition functions: Canonical, grand canonical, microcanonical
+    - Free energies: Helmholtz, Gibbs, grand potential
+    - Entropy: Boltzmann, Gibbs, von Neumann
+
+  - **Plasma Physics** (20 equations):
+    - MHD: Ideal/resistive Ohm's law, flux freezing, equilibrium
+    - Characteristic scales: Debye length, plasma frequency, gyrofrequency
+    - Waves: Alfvén velocity, transit time
+    - Dimensionless: Lundquist, Reynolds, beta, mirror ratio
+
+  - **Solid State Physics** (17 equations):
+    - Band structure: Effective mass, Fermi energy, wavevector
+    - Density of states: 3D and 2D free electrons
+    - Phonons: Dispersion, Debye model, heat capacity
+    - Transport: Drude conductivity, Hall effect
+    - Superconductivity: BCS gap, coherence length, penetration depth
+
+  - **Nuclear Physics** (26 equations):
+    - Binding: SEMF terms, mass defect, binding energy per nucleon
+    - Decay: Exponential law, activity, half-life, Bateman equation
+    - Reactions: Q-value, threshold energy, Breit-Wigner
+    - Fusion/fission: Coulomb barrier, Gamow factor, energy release
+
+  - **Biophysics** (10 equations):
+    - Enzyme kinetics: Michaelis-Menten, Hill, Lineweaver-Burk
+    - Membrane: Nernst, Goldman-Hodgkin-Katz, Hodgkin-Huxley
+    - Population: Logistic growth, Lotka-Volterra
+
+  - **Chemical Kinetics** (15 equations):
+    - Rate laws: Zero, first, second order (integrated and differential)
+    - Temperature: Arrhenius, Eyring, collision theory
+    - Equilibrium: Van't Hoff, thermodynamic K
+
+  - **Materials Science** (21 equations):
+    - Stress-strain: Hooke's law, von Mises, Poisson
+    - Fracture: Griffith, stress intensity, Paris law
+    - Fatigue: Basquin, Coffin-Manson, Goodman
+    - Creep: Norton power law, Larson-Miller
+    - Hardening: Hall-Petch, Taylor
+
+### Changed
+- Equation database expanded from ~67 to ~246 equations
+- 9 new physics domains added to equation registry
+- All equations include LaTeX, dimensional analysis, assumptions, and cross-references
+
 ## [4.3.0] - 2026-01-12
 
 ### Added
