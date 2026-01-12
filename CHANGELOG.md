@@ -5,6 +5,57 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.5.0] - 2026-01-12
+
+### Added
+- **Advanced Physics Analysis Tools** - Professional analysis capabilities:
+
+  - **Buckingham Pi Solver** (`from dimtensor.analysis import buckingham_pi`):
+    - SVD-based algorithm for finding dimensionless Pi groups
+    - Automatic identification of complete set of independent groups
+    - Exact rational exponents using SymPy when available
+    - Recognition of known dimensionless numbers
+    - 33 tests covering fluid mechanics, heat transfer examples
+
+  - **Automatic Non-Dimensionalization** (`from dimtensor.analysis import CharacteristicScalesFinder`):
+    - Automatic extraction of characteristic scales from problem parameters
+    - Multiple strategies: max, mean, median
+    - Database of 17 dimensionless numbers (Reynolds, Mach, Froude, etc.)
+    - Regime inference (laminar/turbulent, subsonic/supersonic)
+    - `compute_all_applicable()` for automatic number discovery
+
+  - **Scaling Law Finder** (`from dimtensor.analysis import PowerLawFitter`):
+    - Single and multi-variable power law fitting
+    - Dimensional consistency constraints during fitting
+    - Automatic coefficient unit determination
+    - R², residuals, and prediction methods
+
+  - **Error Budget Calculator** (`from dimtensor.uncertainty import compute_error_budget`):
+    - GUM-compliant uncertainty contribution analysis
+    - Sensitivity coefficient computation via finite differences
+    - Percentage breakdown by input parameter
+    - Pie chart, bar chart, and Pareto visualizations
+    - DataFrame export for tabular reports
+
+  - **Sensitivity Analysis** (`from dimtensor.analysis import local_sensitivity, rank_parameters`):
+    - Local sensitivity via finite differences
+    - Central, forward, and backward difference methods
+    - Parameter importance ranking with multiple normalization options
+    - Tornado diagram data generation
+    - Unit-aware sensitivity coefficients
+
+  - **Monte Carlo Uncertainty** (`from dimtensor.uncertainty import monte_carlo`):
+    - Random, Latin Hypercube, and Sobol sampling
+    - Correlated input handling via Cholesky decomposition
+    - MCResult with statistics, percentiles, histograms
+    - Convergence diagnostics with warnings
+    - Integration with DimArray uncertainty
+
+### Changed
+- New `analysis/` module with Buckingham Pi, scaling, and sensitivity tools
+- New `uncertainty/` module with error budget and Monte Carlo
+- 100+ new tests for analysis tools
+
 ## [4.4.0] - 2026-01-12
 
 ### Added

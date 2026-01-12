@@ -44,7 +44,10 @@ from .functions import concatenate, stack, split, dot, matmul, norm
 # Profiling tools
 from . import profiling
 
-__version__ = "4.4.0"
+# Analysis tools
+from . import analysis
+
+__version__ = "4.5.0"
 
 __all__ = [
     # Core classes
@@ -72,6 +75,7 @@ __all__ = [
     "validation",
     "config",
     "profiling",
+    "analysis",
     # Version
     "__version__",
 ]
