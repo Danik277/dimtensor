@@ -230,6 +230,7 @@ H = henry
 centimeter = Unit("cm", Dimension(length=1), 0.01)
 millimeter = Unit("mm", Dimension(length=1), 0.001)
 kilometer = Unit("km", Dimension(length=1), 1000.0)
+angstrom = Unit("Å", Dimension(length=1), 1e-10)
 inch = Unit("in", Dimension(length=1), 0.0254)
 foot = Unit("ft", Dimension(length=1), 0.3048)
 yard = Unit("yd", Dimension(length=1), 0.9144)
@@ -267,8 +268,9 @@ rad = radian
 deg = degree
 
 # Temperature (special handling needed for offset conversions)
-# Note: celsius and fahrenheit conversions require offset, not just scaling
-# For now, we only support kelvin for strict dimensional analysis
+# Note: celsius and fahrenheit absolute temperatures require offset, not just scaling
+# celsius unit here represents temperature differences (same dimension as kelvin, scale 1.0)
+celsius = Unit("°C", Dimension(temperature=1), 1.0)
 
 # Energy
 electronvolt = Unit("eV", Dimension(mass=1, length=2, time=-2), 1.602176634e-19)
@@ -282,11 +284,16 @@ bar = Unit("bar", Dimension(mass=1, length=-1, time=-2), 1e5)
 atmosphere = Unit("atm", Dimension(mass=1, length=-1, time=-2), 101325.0)
 torr = Unit("Torr", Dimension(mass=1, length=-1, time=-2), 133.322)
 psi = Unit("psi", Dimension(mass=1, length=-1, time=-2), 6894.757)
+hectopascal = Unit("hPa", Dimension(mass=1, length=-1, time=-2), 100.0)
 
 atm = atmosphere
+hPa = hectopascal
 
 # Speed
+meters_per_second = Unit("m/s", Dimension(length=1, time=-1), 1.0)
 speed_of_light = Unit("c", Dimension(length=1, time=-1), 299792458.0)
+
+m_per_s = meters_per_second
 c = speed_of_light
 
 # =============================================================================

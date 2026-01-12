@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dimtensor"
-version = "4.2.0"
+version = "4.3.0"
 description = "Unit-aware tensors for physics and scientific machine learning"
 readme = "README.md"
 license = {text = "MIT"}
@@ -102,8 +102,22 @@ wandb = [
 web = [
     "streamlit>=1.30.0",
 ]
+materials = [
+    "mp-api>=0.45.0",
+]
+cern = [
+    "uproot>=5.0.0",
+    "awkward>=2.0.0",
+    "cernopendata-client>=0.3.0",
+]
+gwosc = [
+    "gwosc>=0.8.0",
+]
+openfoam = [
+    "foamlib>=0.3.0",
+]
 all = [
-    "dimtensor[torch,jax,netcdf,parquet,xarray,sympy,scipy,sklearn,polars,pandas,h5py,matplotlib,plotly,mlflow,wandb,web]",
+    "dimtensor[torch,jax,netcdf,parquet,xarray,sympy,scipy,sklearn,polars,pandas,h5py,matplotlib,plotly,mlflow,wandb,web,materials,cern,gwosc,openfoam]",
 ]
 
 [project.urls]

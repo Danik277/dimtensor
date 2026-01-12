@@ -13,16 +13,11 @@ Example:
 from ..cache import CacheManager, get_cache_manager, set_cache_manager
 from .astronomy import NASAExoplanetLoader
 from .base import BaseLoader, CSVLoader, ensure_cache_dir, get_cache_dir
-from .cern import CERNOpenDataLoader
 from .climate import NOAAClimateLoader, PRISMClimateLoader
-from .comsol import COMSOLLoader, PhysicsModule, load_comsol_csv, load_comsol_txt
-from .gravitational_wave import GWOSCEventLoader, GWOSCStrainLoader
 from .materials_project import MaterialsProjectLoader
 from .nist import NISTCODATALoader
 from .noaa import NOAAWeatherLoader
-from .openfoam import OpenFOAMLoader
 from .pubchem import PubChemLoader
-from .sdss import SDSSLoader
 from .worldbank import WorldBankClimateLoader
 
 __all__ = [
@@ -30,21 +25,13 @@ __all__ = [
     "CSVLoader",
     "NISTCODATALoader",
     "NASAExoplanetLoader",
-    "CERNOpenDataLoader",
     "PRISMClimateLoader",
     "NOAAClimateLoader",
     "NOAAWeatherLoader",
-    "MaterialsProjectLoader",
-    "OpenFOAMLoader",
     "PubChemLoader",
     "SDSSLoader",
     "WorldBankClimateLoader",
-    "COMSOLLoader",
-    "PhysicsModule",
-    "load_comsol_csv",
-    "load_comsol_txt",
-    "GWOSCEventLoader",
-    "GWOSCStrainLoader",
+    "MaterialsProjectLoader",
     "get_cache_dir",
     "ensure_cache_dir",
     "CacheManager",

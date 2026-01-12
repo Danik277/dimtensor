@@ -5,6 +5,72 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.3.0] - 2026-01-12
+
+### Added
+- **Real-World Physics Data Loaders** - 10 new data source integrations:
+
+  - **CERN Open Data** (`from dimtensor.datasets.loaders import CERNOpenDataLoader`):
+    - Load particle physics data from CERN Open Data Portal
+    - NanoAOD format support via uproot
+    - Extract physics objects (electrons, muons, jets, photons)
+    - Units: GeV, MeV, barn for particle physics quantities
+
+  - **LIGO Gravitational Waves** (`from dimtensor.datasets.loaders import GWOSCEventLoader, GWOSCStrainLoader`):
+    - Load event catalogs (GWTC-1 through GWTC-4)
+    - Load strain time series data from LIGO/Virgo detectors
+    - Units: solar_mass, megaparsec, Hz for astrophysical quantities
+
+  - **Sloan Digital Sky Survey** (`from dimtensor.datasets.loaders import SDSSLoader`):
+    - Query galaxy catalogs via SkyServer SQL interface
+    - Radial search, spectroscopy queries
+    - Units: parsec, arcsec, magnitude for astronomy
+
+  - **Materials Project** (`from dimtensor.datasets.loaders import MaterialsProjectLoader`):
+    - Query crystal structures and material properties
+    - Band gaps, formation energies, elastic constants
+    - Units: eV, angstrom, GPa for materials science
+
+  - **PubChem** (`from dimtensor.datasets.loaders import PubChemLoader`):
+    - Query chemical compound data
+    - Molecular weights, properties, structures
+    - Units: dalton, kelvin, pascal for chemistry
+
+  - **NOAA Weather** (`from dimtensor.datasets.loaders import NOAAWeatherLoader`):
+    - Historical weather data via CDO v2 API
+    - Temperature, precipitation, wind, pressure
+    - Units: celsius, mm, m/s, hectopascal
+
+  - **World Bank Climate** (`from dimtensor.datasets.loaders import WorldBankClimateLoader`):
+    - Climate indicators and projections
+    - Country and basin queries
+    - Units: celsius, mm for climate data
+
+  - **OpenFOAM** (`from dimtensor.datasets.loaders import OpenFOAMLoader`):
+    - Load CFD simulation results
+    - Parse velocity, pressure, temperature fields
+    - Units: m/s, pascal, kelvin for fluid dynamics
+
+  - **COMSOL** (`from dimtensor.datasets.loaders import COMSOLLoader`):
+    - Load FEM simulation results (TXT/CSV exports)
+    - Physics module-based unit inference
+    - Support for structural, thermal, electromagnetic, fluid physics
+
+- **Centralized Cache Management** (`from dimtensor.datasets import CacheManager`):
+  - `~/.dimtensor/cache/` directory for all downloaded data
+  - Cache metadata tracking (URL, size, timestamp, TTL)
+  - Automatic expiration and cleanup
+  - CLI commands: `dimtensor cache list/stats/clean/verify`
+
+### Changed
+- BaseLoader now integrates with CacheManager for centralized caching
+- Added `angstrom`, `celsius`, `hectopascal`, `meters_per_second` units
+- 63 new tests for data loaders and caching
+
+### Dependencies
+- New optional dependency groups: `cern`, `gwosc`, `materials`, `openfoam`
+- Optional: uproot, awkward, gwosc, mp-api, foamlib
+
 ## [4.2.0] - 2026-01-10
 
 ### Added

@@ -16,6 +16,7 @@ def show_help() -> int:
     print("  datasets   List available datasets")
     print("  constants  List physical constants")
     print("  plugins    Manage unit plugins")
+    print("  cache      Manage dataset cache")
     print("  info       Show information about dimtensor")
     print()
     print("Run 'python -m dimtensor <command> --help' for more info.")
@@ -280,6 +281,125 @@ def cmd_plugins() -> int:
     return 0
 
 
+def cmd_cache() -> int:
+    """Manage dataset cache."""
+    import argparse
+
+    from dimtensor.datasets.cache import get_cache_manager
+
+    parser = argparse.ArgumentParser(
+        prog="dimtensor cache",
+        description="Manage dataset cache",
+    )
+    subparsers = parser.add_subparsers(dest="subcommand", help="Cache subcommands")
+
+    # List subcommand
+    list_parser = subparsers.add_parser("list", help="List cache entries")
+    list_parser.add_argument("--source", "-s", help="Filter by source name")
+    list_parser.add_argument("--verbose", "-v", action="store_true", help="Show details")
+
+    # Stats subcommand
+    stats_parser = subparsers.add_parser("stats", help="Show cache statistics")
+
+    # Clean subcommand
+    clean_parser = subparsers.add_parser("clean", help="Clean cache entries")
+    clean_parser.add_argument("--all", "-a", action="store_true", help="Clear all cache")
+    clean_parser.add_argument("--source", "-s", help="Clear by source name")
+    clean_parser.add_argument("--age", type=int, help="Clear entries older than N days")
+    clean_parser.add_argument("--expired", action="store_true", help="Clear expired entries")
+
+    # Verify subcommand
+    verify_parser = subparsers.add_parser("verify", help="Verify cache integrity")
+
+    args = parser.parse_args()
+
+    if not args.subcommand:
+        parser.print_help()
+        return 0
+
+    cache_manager = get_cache_manager()
+
+    if args.subcommand == "list":
+        entries = cache_manager.list_entries(source=args.source)
+
+        if not entries:
+            print("No cache entries found.")
+            return 0
+
+        print(f"Found {len(entries)} cache entry(ies):")
+        for entry in entries:
+            if args.verbose:
+                print(f"\n{entry.cache_key}")
+                print(f"  URL: {entry.url}")
+                print(f"  Source: {entry.source}")
+                print(f"  Size: {entry.size_human()}")
+                print(f"  Age: {entry.age_human()}")
+                print(f"  Path: {entry.filepath}")
+                if entry.ttl is not None:
+                    print(f"  TTL: {entry.ttl}s")
+                    print(f"  Expired: {entry.is_expired()}")
+            else:
+                status = " [EXPIRED]" if entry.is_expired() else ""
+                print(f"  {entry.cache_key}: {entry.size_human()} ({entry.age_human()}){status}")
+
+        return 0
+
+    elif args.subcommand == "stats":
+        stats = cache_manager.get_stats()
+
+        print(f"Cache Statistics:")
+        print(f"  Total entries: {stats['total_entries']}")
+        print(f"  Total size: {stats['total_size_human']}")
+        print(f"  Expired entries: {stats['expired_entries']}")
+
+        if stats['sources']:
+            print(f"  Sources: {', '.join(stats['sources'])}")
+
+        if stats['oldest_entry'] is not None:
+            oldest_days = stats['oldest_entry'] / 86400
+            newest_days = stats['newest_entry'] / 86400
+            print(f"  Oldest entry: {oldest_days:.1f} days")
+            print(f"  Newest entry: {newest_days:.1f} days")
+
+        return 0
+
+    elif args.subcommand == "clean":
+        if args.all:
+            count = cache_manager.clear_all()
+            print(f"Cleared all {count} cache entries.")
+        elif args.source:
+            count = cache_manager.clean_by_source(args.source)
+            print(f"Cleared {count} cache entries from source '{args.source}'.")
+        elif args.age:
+            max_age_seconds = args.age * 86400  # Convert days to seconds
+            count = cache_manager.clean_by_age(max_age_seconds)
+            print(f"Cleared {count} cache entries older than {args.age} days.")
+        elif args.expired:
+            count = cache_manager.clean_expired()
+            print(f"Cleared {count} expired cache entries.")
+        else:
+            print("Please specify what to clean (--all, --source, --age, or --expired).")
+            print("Run 'python -m dimtensor cache clean --help' for options.")
+            return 1
+
+        return 0
+
+    elif args.subcommand == "verify":
+        issues = cache_manager.verify_integrity()
+
+        if not issues:
+            print("Cache integrity verified. No issues found.")
+            return 0
+
+        print(f"Found {len(issues)} issue(s):")
+        for issue in issues:
+            print(f"  - {issue}")
+
+        return 1
+
+    return 0
+
+
 def cmd_info() -> int:
     """Show dimtensor info."""
     from dimtensor import __version__
@@ -326,6 +446,9 @@ def main() -> int:
 
     elif command == "plugins":
         return cmd_plugins()
+
+    elif command == "cache":
+        return cmd_cache()
 
     elif command == "info":
         return cmd_info()

@@ -10,6 +10,8 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
+from ..cache import CacheManager, get_cache_manager
+
 try:
     import requests
     HAS_REQUESTS = True
@@ -51,16 +53,27 @@ class BaseLoader(ABC):
     Attributes:
         cache_enabled: Whether to use caching (default: True).
         cache_dir: Directory for cached files.
+        cache_manager: CacheManager instance for metadata tracking.
+        source_name: Name of the data source (for cache tracking).
     """
 
-    def __init__(self, cache: bool = True):
+    def __init__(
+        self,
+        cache: bool = True,
+        cache_manager: CacheManager | None = None,
+        source_name: str = "",
+    ):
         """Initialize the loader.
 
         Args:
             cache: Whether to enable caching.
+            cache_manager: CacheManager instance (default: global manager).
+            source_name: Name of this data source for cache tracking.
         """
         self.cache_enabled = cache
-        self.cache_dir = ensure_cache_dir()
+        self.cache_manager = cache_manager or get_cache_manager()
+        self.cache_dir = self.cache_manager.cache_dir
+        self.source_name = source_name or self.__class__.__name__
 
     @abstractmethod
     def load(self, **kwargs: Any) -> Any:
@@ -79,6 +92,7 @@ class BaseLoader(ABC):
         url: str,
         cache_key: str | None = None,
         force: bool = False,
+        ttl: float | None = None,
     ) -> Path:
         """Download a file with caching.
 
@@ -86,6 +100,7 @@ class BaseLoader(ABC):
             url: URL to download from.
             cache_key: Cache identifier (default: hash of URL).
             force: Force re-download even if cached.
+            ttl: Time-to-live in seconds (None = use manager default).
 
         Returns:
             Path to the downloaded (or cached) file.
@@ -113,11 +128,16 @@ class BaseLoader(ABC):
             ext = ".dat"
 
         cache_file = self.cache_dir / f"{cache_key}{ext}"
-        metadata_file = self.cache_dir / f"{cache_key}.json"
 
-        # Check cache
-        if self.cache_enabled and not force and cache_file.exists():
-            return cache_file
+        # Check cache manager for existing entry
+        if self.cache_enabled and not force:
+            entry = self.cache_manager.get_entry(cache_key)
+            if entry is not None and not entry.is_expired():
+                # Check if file still exists
+                if cache_file.exists():
+                    return cache_file
+                # File was deleted, remove stale entry
+                self.cache_manager.remove_entry(cache_key)
 
         # Download the file
         try:
@@ -129,14 +149,16 @@ class BaseLoader(ABC):
         # Write to cache
         cache_file.write_bytes(response.content)
 
-        # Write metadata
-        metadata = {
-            "url": url,
-            "cache_key": cache_key,
-            "size": len(response.content),
-            "content_type": response.headers.get("content-type", ""),
-        }
-        metadata_file.write_text(json.dumps(metadata, indent=2))
+        # Register with cache manager
+        if self.cache_enabled:
+            self.cache_manager.add_entry(
+                cache_key=cache_key,
+                url=url,
+                filepath=cache_file,
+                ttl=ttl,
+                content_type=response.headers.get("content-type", ""),
+                source=self.source_name,
+            )
 
         return cache_file
 
@@ -149,27 +171,25 @@ class BaseLoader(ABC):
         Returns:
             Metadata dict or None if not cached.
         """
-        metadata_file = self.cache_dir / f"{cache_key}.json"
-        if not metadata_file.exists():
+        entry = self.cache_manager.get_entry(cache_key)
+        if entry is None:
             return None
 
-        return json.loads(metadata_file.read_text())
+        from dataclasses import asdict
+        return asdict(entry)
 
     def clear_cache(self, cache_key: str | None = None) -> None:
         """Clear cached files.
 
         Args:
-            cache_key: Specific cache key to clear, or None to clear all.
+            cache_key: Specific cache key to clear, or None to clear all from this source.
         """
         if cache_key is None:
-            # Clear all cache files
-            for file in self.cache_dir.iterdir():
-                file.unlink()
+            # Clear all cache files from this source
+            self.cache_manager.clean_by_source(self.source_name)
         else:
             # Clear specific cache key
-            for pattern in [f"{cache_key}.*", f"{cache_key}"]:
-                for file in self.cache_dir.glob(pattern):
-                    file.unlink()
+            self.cache_manager.remove_entry(cache_key)
 
 
 class CSVLoader(BaseLoader):
